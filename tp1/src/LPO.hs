@@ -11,6 +11,11 @@ data Formula = Pred Nombre [Termino] | No Formula | Y Formula Formula | O Formul
 
 --esLiteral :: Dar tipo e implementar.
 
+esLiteral :: Formula -> Bool
+esLiteral (Pred n t) = True
+esLiteral (No p) = True
+esLiteral _ = False
+
  --foldTermino  :: Dar tipo e implementar.
 
 --Esquema de recursión estructural para fórmulas.
