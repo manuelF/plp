@@ -1,7 +1,7 @@
 module LPO where
 
 import Data.Char
-import List
+import Data.List
 
 type Nombre = String
 

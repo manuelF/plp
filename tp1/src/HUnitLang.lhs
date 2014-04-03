@@ -22,8 +22,8 @@ the imports and the implementations but not the interfaces.
 Imports
 -------
 
-> import List (isPrefixOf)
-> import IO (ioeGetErrorString, try)
+> import Data.List (isPrefixOf)
+> import System.IO.Error (ioeGetErrorString, try)
 
 
 
