@@ -17,6 +17,10 @@ esLiteral (No p) = True
 esLiteral _ = False
 
  --foldTermino  :: Dar tipo e implementar.
+foldTermino :: (Nombre -> b) -> ( Nombre -> [b] -> b) -> Termino -> b
+foldTermino f1 f2 (Var n) = f1 n
+foldTermino f1 f2 (Func n t) = f2 n (map (foldTermino f1 f2) t)
+
 
 --Esquema de recursión estructural para fórmulas.
 {-foldFormula
