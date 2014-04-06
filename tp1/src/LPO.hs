@@ -48,7 +48,13 @@ recFormula
      -> (Formula -> Nombre -> b -> b)
      -> Formula
      -> b
-recFormula = error "Falta implementar."
+recFormula f1 f2 f3 f4 f5 f6 f7 (Pred n t) = f1 n t
+recFormula f1 f2 f3 f4 f5 f6 f7 (No f) = f2 f (recFormula f1 f2 f3 f4 f5 f6 f7 f) 
+recFormula f1 f2 f3 f4 f5 f6 f7 (Y a b) = f3 a b (recFormula f1 f2 f3 f4 f5 f6 f7 a) (recFormula f1 f2 f3 f4 f5 f6 f7 b) 
+recFormula f1 f2 f3 f4 f5 f6 f7 (O a b) = f4 a b (recFormula f1 f2 f3 f4 f5 f6 f7 a) (recFormula f1 f2 f3 f4 f5 f6 f7 b)
+recFormula f1 f2 f3 f4 f5 f6 f7 (Imp a b) = f5 a b (recFormula f1 f2 f3 f4 f5 f6 f7 a) (recFormula f1 f2 f3 f4 f5 f6 f7 b)
+recFormula f1 f2 f3 f4 f5 f6 f7 (A n b) = f6 b n (recFormula f1 f2 f3 f4 f5 f6 f7 b)
+recFormula f1 f2 f3 f4 f5 f6 f7 (E n b) = f7 b n (recFormula f1 f2 f3 f4 f5 f6 f7 b)
 
 instance Show Termino where
   show = error "Falta implementar."
