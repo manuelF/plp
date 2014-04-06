@@ -17,8 +17,10 @@ esLiteral (No p) = True
 esLiteral _ = False
 
 foldTermino :: (Nombre -> b) -> ( Nombre -> [b] -> b) -> Termino -> b
-foldTermino f1 f2 (Var n) = f1 n
-foldTermino f1 f2 (Func n t) = f2 n (map (foldTermino f1 f2) t)
+foldTermino f1 f2 = g
+  where 
+    g (Var n) = f1 n
+    g (Func n t) = f2 n (map (foldTermino f1 f2) t)
 
 foldFormula :: (Nombre -> [Termino] -> b) 
                 -> (b -> b)               
@@ -29,13 +31,15 @@ foldFormula :: (Nombre -> [Termino] -> b)
                 -> (Nombre -> b -> b)          
                 -> Formula
                 -> b
-foldFormula f1 f2 f3 f4 f5 f6 f7 (Pred n t) = f1 n t 
-foldFormula f1 f2 f3 f4 f5 f6 f7 (No x) = f2 (foldFormula f1 f2 f3 f4 f5 f6 f7 x)
-foldFormula f1 f2 f3 f4 f5 f6 f7 (Y q w) = f3 (foldFormula f1 f2 f3 f4 f5 f6 f7 q) (foldFormula f1 f2 f3 f4 f5 f6 f7 q)
-foldFormula f1 f2 f3 f4 f5 f6 f7 (O q w) = f4 (foldFormula f1 f2 f3 f4 f5 f6 f7 q) (foldFormula f1 f2 f3 f4 f5 f6 f7 w) 
-foldFormula f1 f2 f3 f4 f5 f6 f7 (Imp q w) = f5 (foldFormula f1 f2 f3 f4 f5 f6 f7 q) (foldFormula f1 f2 f3 f4 f5 f6 f7 w)
-foldFormula f1 f2 f3 f4 f5 f6 f7 (A n q) = f6 n (foldFormula f1 f2 f3 f4 f5 f6 f7 q)
-foldFormula f1 f2 f3 f4 f5 f6 f7 (E n q) = f7 n (foldFormula f1 f2 f3 f4 f5 f6 f7 q) 
+foldFormula f1 f2 f3 f4 f5 f6 f7 = g
+  where 
+    g (Pred n t) = f1 n t 
+    g (No x) = f2 (g x)
+    g (Y q w) = f3 (g q) (g w)
+    g (O q w) = f4 (g q) (g w)
+    g (Imp q w) = f5 (g q) (g w)
+    g (A n q) = f6 n (g q)
+    g (E n q) = f7 n (g q)
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
@@ -48,13 +52,15 @@ recFormula
      -> (Formula -> Nombre -> b -> b)
      -> Formula
      -> b
-recFormula f1 f2 f3 f4 f5 f6 f7 (Pred n t) = f1 n t
-recFormula f1 f2 f3 f4 f5 f6 f7 (No f) = f2 f (recFormula f1 f2 f3 f4 f5 f6 f7 f) 
-recFormula f1 f2 f3 f4 f5 f6 f7 (Y a b) = f3 a b (recFormula f1 f2 f3 f4 f5 f6 f7 a) (recFormula f1 f2 f3 f4 f5 f6 f7 b) 
-recFormula f1 f2 f3 f4 f5 f6 f7 (O a b) = f4 a b (recFormula f1 f2 f3 f4 f5 f6 f7 a) (recFormula f1 f2 f3 f4 f5 f6 f7 b)
-recFormula f1 f2 f3 f4 f5 f6 f7 (Imp a b) = f5 a b (recFormula f1 f2 f3 f4 f5 f6 f7 a) (recFormula f1 f2 f3 f4 f5 f6 f7 b)
-recFormula f1 f2 f3 f4 f5 f6 f7 (A n b) = f6 b n (recFormula f1 f2 f3 f4 f5 f6 f7 b)
-recFormula f1 f2 f3 f4 f5 f6 f7 (E n b) = f7 b n (recFormula f1 f2 f3 f4 f5 f6 f7 b)
+recFormula f1 f2 f3 f4 f5 f6 f7 = g 
+  where
+    g (Pred n t) = f1 n t
+    g (No f) = f2 f (g f) 
+    g (Y a b) = f3 a b (g a) (g b) 
+    g (O a b) = f4 a b (g a) (g b)
+    g (Imp a b) = f5 a b (g a) (g b)
+    g (A n b) = f6 b n (g b)
+    g (E n b) = f7 b n (g b) 
 
 instance Show Termino where
   show = error "Falta implementar."
