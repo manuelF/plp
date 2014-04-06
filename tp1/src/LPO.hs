@@ -9,60 +9,39 @@ data Termino = Var Nombre | Func Nombre [Termino]
 
 data Formula = Pred Nombre [Termino] | No Formula | Y Formula Formula | O Formula Formula | Imp Formula Formula | A Nombre Formula | E Nombre Formula
 
---esLiteral :: Dar tipo e implementar.
-
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _) = True
 esLiteral (No _)     = True
 esLiteral _          = False
 
-foldTermino :: (Nombre -> b) -> ( Nombre -> [b] -> b) -> Termino -> b
-foldTermino f1 f2  = g
-  where 
-    g (Var n) = f1 n
-    g (Func n t) = f2 n (map (foldTermino f1 f2) t)
-
-
--- Mi version. Es igual pero mas facil de leer creo. (Juan)
-{--
+foldTermino :: (Nombre -> b)            --casoVar 
+               -> (Nombre -> [b] -> b)  --casoFunc
+               -> Termino -> b          --termino
 foldTermino casoVar casoFunc ter =
   case ter of
     Var n     -> casoVar n
     Func n ts -> casoFunc n (map rec ts)
-  where rec = folTermino casoVar casoFunc
---}
+  where rec = foldTermino casoVar casoFunc
 
-foldFormula :: (Nombre -> [Termino] -> b) 
-                -> (b -> b)               
-                -> (b -> b -> b)         
-                -> (b -> b -> b)         
-                -> (b -> b -> b)         
-                -> (Nombre -> b -> b)     
-                -> (Nombre -> b -> b)          
-                -> Formula
-                -> b
-foldFormula f1 f2 f3 f4 f5 f6 f7 = g
-  where 
-    g (Pred n t) = f1 n t 
-    g (No x) = f2 (g a)
-    g (Y a b) = f3 (g a) (g b)
-    g (O a b) = f4 (g a) (g b)
-    g (Imp a b) = f5 (g a) (g b)
-    g (A n a) = f6 n (g a)
-    g (E n a) = f7 n (g a)
-
-{--
+foldFormula :: (Nombre -> [Termino] -> b)--casoPred 
+               -> (b -> b)               --casoNo
+               -> (b -> b -> b)          --casoY
+               -> (b -> b -> b)          --casoO
+               -> (b -> b -> b)          --casoImp
+               -> (Nombre -> b -> b)     --casoA
+               -> (Nombre -> b -> b)     --casoE
+               -> Formula                --parametro
+               -> b
 foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
   case f of
     Pred n ts -> casoPred n ts
-    No f1     -> casoNo rec f1
+    No f1     -> casoNo (rec f1)
     Y f1 f2   -> casoY (rec f1) (rec f2)
     O f1 f2   -> casoO (rec f1) (rec f2)
-    Imp f2 f2 -> casoImp (rec f1) (rec f2)
+    Imp f1 f2 -> casoImp (rec f1) (rec f2)
     A n f1    -> casoA n (rec f1)
     E n f1    -> casoE n (rec f1)
   where rec = foldFormula casoPred casoNo casoY casoO casoImp casoA casoE
---}
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
@@ -78,12 +57,12 @@ recFormula
 recFormula f1 f2 f3 f4 f5 f6 f7 = g 
   where
     g (Pred n t) = f1 n t
-    g (No a) = f2 f (g a) 
+    g (No a) = f2 a (g a) 
     g (Y a b) = f3 a b (g a) (g b) 
     g (O a b) = f4 a b (g a) (g b)
     g (Imp a b) = f5 a b (g a) (g b)
-    g (A n a) = f6 b n (g a)
-    g (E n a) = f7 b n (g a) 
+    g (A n a) = f6 a n (g a)
+    g (E n a) = f7 a n (g a) 
 
 instance Show Termino where
   show = error "Falta implementar."
