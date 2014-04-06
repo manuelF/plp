@@ -23,8 +23,8 @@ Imports
 -------
 
 > import Data.List (isPrefixOf)
-> import System.IO.Error (ioeGetErrorString, try)
-
+> import System.IO.Error (ioeGetErrorString)
+> import Control.Exception (try)
 
 
 Interfaces

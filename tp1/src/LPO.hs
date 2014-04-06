@@ -14,6 +14,7 @@ esLiteral (Pred _ _) = True
 esLiteral (No _)     = True
 esLiteral _          = False
 
+
 foldTermino :: (Nombre -> b)            --casoVar 
                -> (Nombre -> [b] -> b)  --casoFunc
                -> Termino -> b          --termino
@@ -22,6 +23,7 @@ foldTermino casoVar casoFunc ter =
     Var n     -> casoVar n
     Func n ts -> casoFunc n (map rec ts)
   where rec = foldTermino casoVar casoFunc
+
 
 foldFormula :: (Nombre -> [Termino] -> b)--casoPred 
                -> (b -> b)               --casoNo
@@ -42,6 +44,7 @@ foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
     A n f1    -> casoA n (rec f1)
     E n f1    -> casoE n (rec f1)
   where rec = foldFormula casoPred casoNo casoY casoO casoImp casoA casoE
+
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
@@ -64,9 +67,13 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
     g (A n a) = f6 a n (g a)
     g (E n a) = f7 a n (g a) 
 
+
 instance Show Termino where
-  show = error "Falta implementar."
-				      
+  --show = error "Falta implementar."
+  --show = foldTermino id (\n r -> parentizar n r)
+  show = foldTermino id parentizar
+
+
 join::[a]->[[a]]->[a]
 join separador = foldr (\x res->if null res then x else x++separador++res) []
 
