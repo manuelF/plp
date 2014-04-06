@@ -12,15 +12,25 @@ data Formula = Pred Nombre [Termino] | No Formula | Y Formula Formula | O Formul
 --esLiteral :: Dar tipo e implementar.
 
 esLiteral :: Formula -> Bool
-esLiteral (Pred n t) = True
-esLiteral (No p) = True
-esLiteral _ = False
+esLiteral (Pred _ _) = True
+esLiteral (No _)     = True
+esLiteral _          = False
 
 foldTermino :: (Nombre -> b) -> ( Nombre -> [b] -> b) -> Termino -> b
-foldTermino f1 f2 = g
+foldTermino f1 f2  = g
   where 
     g (Var n) = f1 n
     g (Func n t) = f2 n (map (foldTermino f1 f2) t)
+
+
+-- Mi version. Es igual pero mas facil de leer creo. (Juan)
+{--
+foldTermino casoVar casoFunc ter =
+  case ter of
+    Var n     -> casoVar n
+    Func n ts -> casoFunc n (map rec ts)
+  where rec = folTermino casoVar casoFunc
+--}
 
 foldFormula :: (Nombre -> [Termino] -> b) 
                 -> (b -> b)               
@@ -40,6 +50,7 @@ foldFormula f1 f2 f3 f4 f5 f6 f7 = g
     g (Imp a b) = f5 (g a) (g b)
     g (A n a) = f6 n (g a)
     g (E n a) = f7 n (g a)
+
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
