@@ -34,12 +34,12 @@ foldFormula :: (Nombre -> [Termino] -> b)
 foldFormula f1 f2 f3 f4 f5 f6 f7 = g
   where 
     g (Pred n t) = f1 n t 
-    g (No x) = f2 (g x)
-    g (Y q w) = f3 (g q) (g w)
-    g (O q w) = f4 (g q) (g w)
-    g (Imp q w) = f5 (g q) (g w)
-    g (A n q) = f6 n (g q)
-    g (E n q) = f7 n (g q)
+    g (No x) = f2 (g a)
+    g (Y a b) = f3 (g a) (g b)
+    g (O a b) = f4 (g a) (g b)
+    g (Imp a b) = f5 (g a) (g b)
+    g (A n a) = f6 n (g a)
+    g (E n a) = f7 n (g a)
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
@@ -55,12 +55,12 @@ recFormula
 recFormula f1 f2 f3 f4 f5 f6 f7 = g 
   where
     g (Pred n t) = f1 n t
-    g (No f) = f2 f (g f) 
+    g (No a) = f2 f (g a) 
     g (Y a b) = f3 a b (g a) (g b) 
     g (O a b) = f4 a b (g a) (g b)
     g (Imp a b) = f5 a b (g a) (g b)
-    g (A n b) = f6 b n (g b)
-    g (E n b) = f7 b n (g b) 
+    g (A n a) = f6 b n (g a)
+    g (E n a) = f7 b n (g a) 
 
 instance Show Termino where
   show = error "Falta implementar."
