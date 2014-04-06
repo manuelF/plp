@@ -16,15 +16,26 @@ esLiteral (Pred n t) = True
 esLiteral (No p) = True
 esLiteral _ = False
 
- --foldTermino  :: Dar tipo e implementar.
 foldTermino :: (Nombre -> b) -> ( Nombre -> [b] -> b) -> Termino -> b
 foldTermino f1 f2 (Var n) = f1 n
 foldTermino f1 f2 (Func n t) = f2 n (map (foldTermino f1 f2) t)
 
-
---Esquema de recursión estructural para fórmulas.
-{-foldFormula
-  :: dar tipo e implementar. -}
+foldFormula :: (Nombre -> [Termino] -> b) 
+                -> (b -> b)               
+                -> (b -> b -> b)         
+                -> (b -> b -> b)         
+                -> (b -> b -> b)         
+                -> (Nombre -> b -> b)     
+                -> (Nombre -> b -> b)          
+                -> Formula
+                -> b
+foldFormula f1 f2 f3 f4 f5 f6 f7 (Pred n t) = f1 n t 
+foldFormula f1 f2 f3 f4 f5 f6 f7 (No x) = f2 (foldFormula f1 f2 f3 f4 f5 f6 f7 x)
+foldFormula f1 f2 f3 f4 f5 f6 f7 (Y q w) = f3 (foldFormula f1 f2 f3 f4 f5 f6 f7 q) (foldFormula f1 f2 f3 f4 f5 f6 f7 q)
+foldFormula f1 f2 f3 f4 f5 f6 f7 (O q w) = f4 (foldFormula f1 f2 f3 f4 f5 f6 f7 q) (foldFormula f1 f2 f3 f4 f5 f6 f7 w) 
+foldFormula f1 f2 f3 f4 f5 f6 f7 (Imp q w) = f5 (foldFormula f1 f2 f3 f4 f5 f6 f7 q) (foldFormula f1 f2 f3 f4 f5 f6 f7 w)
+foldFormula f1 f2 f3 f4 f5 f6 f7 (A n q) = f6 n (foldFormula f1 f2 f3 f4 f5 f6 f7 q)
+foldFormula f1 f2 f3 f4 f5 f6 f7 (E n q) = f7 n (foldFormula f1 f2 f3 f4 f5 f6 f7 q) 
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
