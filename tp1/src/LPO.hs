@@ -51,6 +51,18 @@ foldFormula f1 f2 f3 f4 f5 f6 f7 = g
     g (A n a) = f6 n (g a)
     g (E n a) = f7 n (g a)
 
+{--
+foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
+  case f of
+    Pred n ts -> casoPred n ts
+    No f1     -> casoNo rec f1
+    Y f1 f2   -> casoY (rec f1) (rec f2)
+    O f1 f2   -> casoO (rec f1) (rec f2)
+    Imp f2 f2 -> casoImp (rec f1) (rec f2)
+    A n f1    -> casoA n (rec f1)
+    E n f1    -> casoE n (rec f1)
+  where rec = foldFormula casoPred casoNo casoY casoO casoImp casoA casoE
+--}
 
 --Esquema de recursión primitiva para fórmulas.
 recFormula
