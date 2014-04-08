@@ -181,21 +181,43 @@ asignacion1 "X" = 0
 asignacion1 "Y" = 1
 asignacion1 "Z" = 2
 
-evaluar::Asignacion a->(Nombre->[a]->a)->Termino->a
-evaluar = error "Falta implementar."
-
+---- Ejercicio 10
 --Ejemplo: evaluar asignacion1 (fTerm ejemploNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
+evaluar::Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
+evaluar asig ft  = foldTermino asig (\n r -> ft n r)
 
---actualizarAsignacion :: Implementar y dar el tipo.
 
+---- Ejercicio 11
+-- *****¿En asignacion todas las variables estan en mayuscula?*****
+actualizarAsignacion :: Nombre -> a -> Asignacion a -> Asignacion a
+actualizarAsignacion nombre valor asig = \n -> if n == nombre
+                                               then valor
+                                               else asig n
+
+---- Ejercicio 12
 -- Se usa una asignación de valores a las variables libres. Pueden usar recursión
 -- explícita, pero aclaren por qué no encaja bien en fold ni rec.
 -- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
 -- es natural/sencillo. ¿por qué?
 
-
 vale::Eq a =>Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
-vale = error "Falta implementar."
+{--
+vale inter dom asig f = foldFormula (\n ts -> fPred inter n ts)
+                                    not
+                                    (&&)
+                                    (||)
+                                    (-->)
+                                    "Booom fold"
+--}
+vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
+vale inter dom asig (No f)      = not (vale inter dom asig f)
+vale inter dom asig (Y f1 f2)   = (vale inter dom asig f1) && (vale inter dom asig f2)
+vale inter dom asig (Imp f1 f2) = (vale inter dom asig f1) --> (vale inter dom asig f2)
+vale inter dom asig (A n f)     = and [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
+vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
+
+(-->) :: Bool -> Bool -> Bool
+(-->) x y = not x || y
 
 -- Ejemplos (agreguen alguno con otra interpretación).
 

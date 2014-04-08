@@ -35,7 +35,9 @@ allTests = test [
 	"parentizar" ~: testsParentizar,
         "eliminarImplicaciones" ~: testsEliminarImplicaciones,
         "aFNN" ~: testsAFNN,
-        "FV" ~: testsFv
+        "FV" ~: testsFv,
+        "evaluar" ~: testsEvaluar,
+        "actualizarAsignacion" ~: testsActualizarAsignacion
 	]
 
 testsJoin = test [
@@ -55,6 +57,7 @@ form1 = Imp   (Pred "P" [Func "f" [Var "x"]])    (Pred "Q" [Var "x"])
 form2 = O (No (Pred "P" [Func "f" [Var "x"]]) )  (Pred "Q" [Var "x"])
 form3 = A "x" (E "y" (Imp (Pred "p" [Var "x"])(Pred "q" [Var "x", Var "y"])))
 form4 = A "x" (E "y" (O (No (Pred "p" [Var "x"])) (Pred "q" [Var "x", Var "y"])))
+term1 = Func "suma" [Func "suc" [Var "X"], Var "Y"]
 
 testsEliminarImplicaciones = test [
         formulaToString (eliminarImplicaciones  form1) ~=? formulaToString form2
@@ -68,4 +71,13 @@ testsFv = test [
          fv form1 ~=? ["x"],
          fv form3 ~=? []
          ]
-            
+
+
+testsEvaluar = test [
+        evaluar asignacion1 (fTerm ejemploNat)  term1 ~=? 2
+        ]
+
+testsActualizarAsignacion = test [
+        (actualizarAsignacion "X" 99 asignacion1) "X" ~=? 99,
+        (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1
+        ]
