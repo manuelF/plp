@@ -71,7 +71,14 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
 instance Show Termino where
   --show = error "Falta implementar."
   --show = foldTermino id (\n r -> parentizar n r)
-  show = foldTermino id parentizar
+  show = terminoToString
+  
+terminoToString :: Termino -> String
+terminoToString = foldTermino mayusculirizar
+                              (\n r -> if null r then n else parentizar n r)
+
+mayusculirizar ::Nombre -> Nombre
+mayusculirizar n = [toUpper l | l <- n]
 
 
 join::[a]->[[a]]->[a]
@@ -83,7 +90,15 @@ parentizar s res = if null res then s else s++"("++(join "," res)++")"
 
 instance Show Formula where
 -- Operadores lógicos: "¬","∧","∨","⊃","∀","∃"
-    show = error "Falta implementar."
+    --show = error "Falta implementar."
+    show = foldFormula (\n ts  -> parentizar (mayusculirizar n) (map terminoToString ts))
+                       (\r     -> "¬" ++ r)
+                       (\r1 r2 -> r1 ++ "∧" ++ r2)
+                       (\r1 r2 -> r1 ++ "∨" ++ r2)
+                       (\r1 r2 -> r1 ++ "⊃" ++ r2)
+                       (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
+                       (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
+
 
 --Ejemplo: A "x" (Imp (Pred "p" [Var "x"]) (Pred "p" [Var "x"])) se ve como ∀X.((P(X)⊃P(X)))
 
