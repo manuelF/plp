@@ -5,19 +5,29 @@ import Data.List
 
 type Nombre = String
 
-data Termino = Var Nombre | Func Nombre [Termino]
+data Termino = Var Nombre
+             | Func Nombre [Termino]
 
-data Formula = Pred Nombre [Termino] | No Formula | Y Formula Formula | O Formula Formula | Imp Formula Formula | A Nombre Formula | E Nombre Formula
+data Formula = Pred Nombre [Termino]
+             | No Formula
+             | Y Formula Formula
+             | O Formula Formula
+             | Imp Formula Formula
+             | A Nombre Formula
+             | E Nombre Formula
 
+
+---- Ejercicio 1
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _) = True
 esLiteral (No _)     = True
 esLiteral _          = False
 
 
-foldTermino :: (Nombre -> b)            --casoVar 
-               -> (Nombre -> [b] -> b)  --casoFunc
-               -> Termino -> b          --termino
+---- Ejercicio 2
+foldTermino ::   (Nombre -> b)         --casoVar 
+            -> (Nombre -> [b] -> b)    --casoFunc
+            -> Termino -> b            --termino
 foldTermino casoVar casoFunc ter =
   case ter of
     Var n     -> casoVar n
@@ -25,15 +35,16 @@ foldTermino casoVar casoFunc ter =
   where rec = foldTermino casoVar casoFunc
 
 
-foldFormula :: (Nombre -> [Termino] -> b)--casoPred 
-               -> (b -> b)               --casoNo
-               -> (b -> b -> b)          --casoY
-               -> (b -> b -> b)          --casoO
-               -> (b -> b -> b)          --casoImp
-               -> (Nombre -> b -> b)     --casoA
-               -> (Nombre -> b -> b)     --casoE
-               -> Formula                --parametro
-               -> b
+---- Ejercicio 3
+foldFormula ::   (Nombre -> [Termino] -> b) --casoPred 
+            -> (b -> b)                     --casoNo
+            -> (b -> b -> b)                --casoY
+            -> (b -> b -> b)                --casoO
+            -> (b -> b -> b)                --casoImp
+            -> (Nombre -> b -> b)           --casoA
+            -> (Nombre -> b -> b)           --casoE
+            -> Formula                      --parametro
+            -> b
 foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
   case f of
     Pred n ts -> casoPred n ts
@@ -46,17 +57,17 @@ foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
   where rec = foldFormula casoPred casoNo casoY casoO casoImp casoA casoE
 
 
+---- Ejercicio 4
 --Esquema de recursión primitiva para fórmulas.
-recFormula
-  :: (Nombre -> [Termino] -> b)
-     -> (Formula -> b -> b)
-     -> (Formula -> Formula -> b -> b -> b)
-     -> (Formula -> Formula -> b -> b -> b)
-     -> (Formula -> Formula -> b -> b -> b)
-     -> (Formula -> Nombre -> b -> b)
-     -> (Formula -> Nombre -> b -> b)
-     -> Formula
-     -> b
+recFormula :: (Nombre -> [Termino] -> b)
+           -> (Formula -> b -> b)
+           -> (Formula -> Formula -> b -> b -> b)
+           -> (Formula -> Formula -> b -> b -> b)
+           -> (Formula -> Formula -> b -> b -> b)
+           -> (Formula -> Nombre -> b -> b)
+           -> (Formula -> Nombre -> b -> b)
+           -> Formula
+           -> b
 recFormula f1 f2 f3 f4 f5 f6 f7 = g 
   where
     g (Pred n t) = f1 n t
@@ -68,8 +79,8 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
     g (E n a) = f7 a n (g a) 
 
 
+---- Ejercicio 5
 instance Show Termino where
-  --show = error "Falta implementar."
   --show = foldTermino id (\n r -> parentizar n r)
   show = terminoToString
   
@@ -84,13 +95,15 @@ mayusculirizar n = [toUpper l | l <- n]
 join::[a]->[[a]]->[a]
 join separador = foldr (\x res->if null res then x else x++separador++res) []
 
-{- Toma un nombre de función y una lista de argumentos ya convertidos en String, y termina de armar la representación visual. -}
+{- Toma un nombre de función y una lista de argumentos ya convertidos en String,
+   y termina de armar la representación visual. -}
 parentizar :: Nombre -> [String] -> String
 parentizar s res = if null res then s else s++"("++(join "," res)++")"
 
+
+---- Ejercicio 6
 instance Show Formula where
 -- Operadores lógicos: "¬","∧","∨","⊃","∀","∃"
-    --show = error "Falta implementar."
     show = formulaToString
 
 formulaToString :: Formula -> String
@@ -102,24 +115,40 @@ formulaToString = foldFormula
                     (\r1 r2 -> r1 ++ "⊃" ++ r2)
                     (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
                     (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
+                    
 
-
---Ejemplo: A "x" (Imp (Pred "p" [Var "x"]) (Pred "p" [Var "x"])) se ve como ∀X.((P(X)⊃P(X)))
-
+---- Ejercicio 7
 --eliminarImplicaciones :: Dar tipo e implementar.
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
+
+---- Ejercicio 8
 aFNN::Formula->Formula
---aFNN = error "Falta implementar."
 aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1 ) r2) A E
 
 negar :: Formula -> Formula
 negar (No f) = f
 negar f      = No f
 
+
+---- Ejercicio 9
 --fv:: Dar tipo e implementar.
 
+-- Tiene que haber una manera mejor de escribir esto
+fv :: Formula -> [Nombre]
+fv = foldFormula (\n ts -> concat (map obtenerVariables ts))
+                 id
+                 (\r1 r2 -> nub (r1 ++ r2))
+                 (\r1 r2 -> nub (r1 ++ r2))
+                 (\r1 r2 -> nub (r1 ++ r2))
+                 (\n  r  -> filter (/=n) r)
+                 (\n r   -> filter (/=n) r)  
+
+obtenerVariables :: Termino -> [Nombre] 
+obtenerVariables = foldTermino (:[]) (\n r -> concat r)
+
+  
 --Interpretación en un dominio a. Una función para términos y otra para predicados.
 --Basta con que las funciones estén bien definidas para su dominio esperado.
 data Interpretacion a = I {fTerm :: (Nombre->[a]->a), fPred :: (Nombre->[a]->Bool)}
@@ -159,8 +188,12 @@ evaluar = error "Falta implementar."
 
 --actualizarAsignacion :: Implementar y dar el tipo.
 
---Se usa una asignación de valores a las variables libres. Pueden usar recursión explícita, pero aclaren por qué no encaja bien en fold ni rec.
---Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no es natural/sencillo. ¿por qué?
+-- Se usa una asignación de valores a las variables libres. Pueden usar recursión
+-- explícita, pero aclaren por qué no encaja bien en fold ni rec.
+-- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
+-- es natural/sencillo. ¿por qué?
+
+
 vale::Eq a =>Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 vale = error "Falta implementar."
 

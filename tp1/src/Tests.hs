@@ -34,7 +34,8 @@ allTests = test [
 	"join" ~: testsJoin,
 	"parentizar" ~: testsParentizar,
         "eliminarImplicaciones" ~: testsEliminarImplicaciones,
-        "aFNN" ~: testsAFNN
+        "aFNN" ~: testsAFNN,
+        "FV" ~: testsFv
 	]
 
 testsJoin = test [
@@ -61,5 +62,10 @@ testsEliminarImplicaciones = test [
 
 testsAFNN = test [
          formulaToString (aFNN  form3) ~=? formulaToString form4
+         ]
+
+testsFv = test [
+         fv form1 ~=? ["x"],
+         fv form3 ~=? []
          ]
             
