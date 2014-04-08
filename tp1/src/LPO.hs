@@ -91,18 +91,24 @@ parentizar s res = if null res then s else s++"("++(join "," res)++")"
 instance Show Formula where
 -- Operadores lógicos: "¬","∧","∨","⊃","∀","∃"
     --show = error "Falta implementar."
-    show = foldFormula (\n ts  -> parentizar (mayusculirizar n) (map terminoToString ts))
-                       (\r     -> "¬" ++ r)
-                       (\r1 r2 -> r1 ++ "∧" ++ r2)
-                       (\r1 r2 -> r1 ++ "∨" ++ r2)
-                       (\r1 r2 -> r1 ++ "⊃" ++ r2)
-                       (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
-                       (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
+    show = formulaToString
+
+formulaToString :: Formula -> String
+formulaToString = foldFormula
+                    (\n ts  -> parentizar (mayusculirizar n) (map terminoToString ts))
+                    (\r     -> "¬" ++ r)
+                    (\r1 r2 -> r1 ++ "∧" ++ r2)
+                    (\r1 r2 -> r1 ++ "∨" ++ r2)
+                    (\r1 r2 -> r1 ++ "⊃" ++ r2)
+                    (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
+                    (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
 
 --Ejemplo: A "x" (Imp (Pred "p" [Var "x"]) (Pred "p" [Var "x"])) se ve como ∀X.((P(X)⊃P(X)))
 
 --eliminarImplicaciones :: Dar tipo e implementar.
+eliminarImplicaciones :: Formula -> Formula
+eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
 aFNN::Formula->Formula
 aFNN = error "Falta implementar."
