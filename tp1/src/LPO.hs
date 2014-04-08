@@ -111,7 +111,12 @@ eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
 aFNN::Formula->Formula
-aFNN = error "Falta implementar."
+--aFNN = error "Falta implementar."
+aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1 ) r2) A E
+
+negar :: Formula -> Formula
+negar (No f) = f
+negar f      = No f
 
 --fv:: Dar tipo e implementar.
 

@@ -33,7 +33,8 @@ expected ~~ actual = (sort expected) == (sort actual)
 allTests = test [ 
 	"join" ~: testsJoin,
 	"parentizar" ~: testsParentizar,
-        "eliminarImplicaciones" ~: testsEliminarImplicaciones
+        "eliminarImplicaciones" ~: testsEliminarImplicaciones,
+        "aFNN" ~: testsAFNN
 	]
 
 testsJoin = test [
@@ -51,7 +52,14 @@ testsParentizar = test [
 
 form1 = Imp   (Pred "P" [Func "f" [Var "x"]])    (Pred "Q" [Var "x"])
 form2 = O (No (Pred "P" [Func "f" [Var "x"]]) )  (Pred "Q" [Var "x"])
+form3 = A "x" (E "y" (Imp (Pred "p" [Var "x"])(Pred "q" [Var "x", Var "y"])))
+form4 = A "x" (E "y" (O (No (Pred "p" [Var "x"])) (Pred "q" [Var "x", Var "y"])))
 
 testsEliminarImplicaciones = test [
-        formulaToString (eliminarImplicaciones form1) ~=? formulaToString form2
+        formulaToString (eliminarImplicaciones  form1) ~=? formulaToString form2
         ]
+
+testsAFNN = test [
+         formulaToString (aFNN  form3) ~=? formulaToString form4
+         ]
+            
