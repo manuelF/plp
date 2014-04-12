@@ -30,12 +30,19 @@ expected ~~ actual = (sort expected) == (sort actual)
 	No olviden agregar sus tests al listado allTests para que se ejecuten.
 -}
 
+-- suma(suc(x),y)
 term1 = Func "suma" [Func "suc" [Var "X"], Var "Y"]
+-- P(f(x)) -> Q(x)
 form1 = Imp   (Pred "P" [Func "f" [Var "x"]])    (Pred "Q" [Var "x"])
+-- ~(P(f(x))) v Q(x)
 form2 = O (No (Pred "P" [Func "f" [Var "x"]]) )  (Pred "Q" [Var "x"])
+-- V x E y (P(x)->q(x,y))
 form3 = A "x" (E "y" (Imp (Pred "p" [Var "x"])(Pred "q" [Var "x", Var "y"])))
+-- V x E y (~(p(x)) v q(x,y))
 form4 = A "x" (E "y" (O (No (Pred "p" [Var "x"])) (Pred "q" [Var "x", Var "y"])))
+-- ~(p(c()))
 form5 = No (Pred "p" [Func "c" []])
+-- p(c())
 form6 = Pred "p" [Func "c" []]
 
 allTests = test [ 
