@@ -26,13 +26,22 @@ expected ~~ actual = (sort expected) == (sort actual)
 
 {-
 	Definición de los casos de test.
-	
+
 	No olviden agregar sus tests al listado allTests para que se ejecuten.
 -}
- 
+
+term1 = Func "suma" [Func "suc" [Var "X"], Var "Y"]
+form1 = Imp   (Pred "P" [Func "f" [Var "x"]])    (Pred "Q" [Var "x"])
+form2 = O (No (Pred "P" [Func "f" [Var "x"]]) )  (Pred "Q" [Var "x"])
+form3 = A "x" (E "y" (Imp (Pred "p" [Var "x"])(Pred "q" [Var "x", Var "y"])))
+form4 = A "x" (E "y" (O (No (Pred "p" [Var "x"])) (Pred "q" [Var "x", Var "y"])))
+form5 = No (Pred "p" [Func "c" []])
+form6 = Pred "p" [Func "c" []]
+
 allTests = test [ 
 	"join" ~: testsJoin,
 	"parentizar" ~: testsParentizar,
+        "esLiteral" ~: testsEsLiteral,
         "eliminarImplicaciones" ~: testsEliminarImplicaciones,
         "aFNN" ~: testsAFNN,
         "FV" ~: testsFv,
@@ -52,12 +61,12 @@ testsParentizar = test [
 	parentizar "f" ["x", "y"] ~=? "f(x,y)"
 	]
 
-
-form1 = Imp   (Pred "P" [Func "f" [Var "x"]])    (Pred "Q" [Var "x"])
-form2 = O (No (Pred "P" [Func "f" [Var "x"]]) )  (Pred "Q" [Var "x"])
-form3 = A "x" (E "y" (Imp (Pred "p" [Var "x"])(Pred "q" [Var "x", Var "y"])))
-form4 = A "x" (E "y" (O (No (Pred "p" [Var "x"])) (Pred "q" [Var "x", Var "y"])))
-term1 = Func "suma" [Func "suc" [Var "X"], Var "Y"]
+testsEsLiteral = test [
+       esLiteral form1 ~=? False,
+       esLiteral form2 ~=? False,
+       esLiteral form5 ~=? True,
+       esLiteral form6 ~=? True
+       ]
 
 testsEliminarImplicaciones = test [
         formulaToString (eliminarImplicaciones  form1) ~=? formulaToString form2

@@ -18,6 +18,13 @@ data Formula = Pred Nombre [Termino]
 
 
 ---- Ejercicio 1
+{--
+ Utiliza pattern matching para examinar el tipo algebraico del unico argumento
+ y devuelve True en caso de ser un literal o False en caso contrario.
+ esLiteral  Pred "p" [Func "c" []]      ⟶ True
+ esLiteral  No (Pred "p" [Func "c" []]) ⟶ True
+ esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ⟶ False
+--}
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _) = True
 esLiteral (No _)     = True
@@ -81,7 +88,6 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
 
 ---- Ejercicio 5
 instance Show Termino where
-  --show = foldTermino id (\n r -> parentizar n r)
   show = terminoToString
   
 terminoToString :: Termino -> String
@@ -118,7 +124,6 @@ formulaToString = foldFormula
                     
 
 ---- Ejercicio 7
---eliminarImplicaciones :: Dar tipo e implementar.
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
@@ -133,8 +138,6 @@ negar f      = No f
 
 
 ---- Ejercicio 9
---fv:: Dar tipo e implementar.
-
 -- Tiene que haber una manera mejor de escribir esto
 fv :: Formula -> [Nombre]
 fv = foldFormula (\n ts -> concat (map obtenerVariables ts))
