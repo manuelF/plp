@@ -95,7 +95,8 @@ terminoToString = foldTermino mayusculirizar
                               (\n r -> if null r then n else parentizar n r)
 
 mayusculirizar ::Nombre -> Nombre
-mayusculirizar n = [toUpper l | l <- n]
+mayusculirizar n = map toUpper n
+--mayusculirizar n = [toUpper l | l <- n]
 
 
 join::[a]->[[a]]->[a]
@@ -111,7 +112,8 @@ parentizar s res = if null res then s else s++"("++(join "," res)++")"
 instance Show Formula where
 -- Operadores lógicos: "¬","∧","∨","⊃","∀","∃"
     show = formulaToString
-
+-- Toma una formula y foldea reemplazando cada constructor con un comportamiento
+-- especifico sobre como imprimir en ese caso.
 formulaToString :: Formula -> String
 formulaToString = foldFormula
                     (\n ts  -> parentizar (mayusculirizar n) (map terminoToString ts))
@@ -124,11 +126,15 @@ formulaToString = foldFormula
                     
 
 ---- Ejercicio 7
+-- Toma una formula y foldea normalmente pero reemplazando las implicaciones con
+-- ~A o B.
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
 
 ---- Ejercicio 8
+-- Toma una formula y foldea negando las subformulas y reemplazando las implicaciones
+-- con ~A o B
 aFNN::Formula->Formula
 aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1 ) r2) A E
 
@@ -139,15 +145,19 @@ negar f      = No f
 
 ---- Ejercicio 9
 -- Tiene que haber una manera mejor de escribir esto
+-- Toma una formula y devuelve el conjunto de nombres de todas las variables
+-- no ligadas.
 fv :: Formula -> [Nombre]
-fv = foldFormula (\n ts -> concat (map obtenerVariables ts))
-                 id
-                 (\r1 r2 -> nub (r1 ++ r2))
-                 (\r1 r2 -> nub (r1 ++ r2))
-                 (\r1 r2 -> nub (r1 ++ r2))
-                 (\n  r  -> filter (/=n) r)
-                 (\n r   -> filter (/=n) r)  
+fv = foldFormula (\n ts -> concat (map obtenerVariables ts)) -- Caso Pred: Devuelve todas las variable.
+                 id                                          -- Caso No: Si es una negacion de formula, las mismas variables.
+                 (\r1 r2 -> nub (r1 ++ r2))                  -- Caso Y: Devolvemos las desduplicaciones de ambas subformulas.
+                 (\r1 r2 -> nub (r1 ++ r2))                  -- Caso O: Idem ^^
+                 (\r1 r2 -> nub (r1 ++ r2))                  -- Caso Imp: Idem ^^
+                 (\n  r  -> filter (/=n) r)                  -- Caso A: Devolvemos las variables de las subformulas que sean 
+                                                             --     distintas a la ligada variable ligada aca.
+                 (\n r   -> filter (/=n) r)                  -- Caso E: Idem ^^
 
+-- Proyeccion de los nombres de un termino en una lista.
 obtenerVariables :: Termino -> [Nombre] 
 obtenerVariables = foldTermino (:[]) (\n r -> concat r)
 
