@@ -203,7 +203,7 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
 -- es natural/sencillo. ¿por qué?
 
-vale::Eq a =>Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
+vale::Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 {--
 vale inter dom asig f = foldFormula (\n ts -> fPred inter n ts)
                                     not
@@ -212,13 +212,22 @@ vale inter dom asig f = foldFormula (\n ts -> fPred inter n ts)
                                     (-->)
                                     "Booom fold"
 --}
+--Caso 1: La valuacion de un predicado es la valuacion de sus terminos dadas las asignaciones.
 vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
+--Caso 2: La valuacion de una negacion es la negacion de la valuacion.
 vale inter dom asig (No f)      = not (vale inter dom asig f)
+--Caso 3: La valuacion de una conjuncion es la conjuncion de las valuaciones.
 vale inter dom asig (Y f1 f2)   = (vale inter dom asig f1) && (vale inter dom asig f2)
+--Caso 4: La valuacion de una implicacion es la implicacion de las valuaciones.
 vale inter dom asig (Imp f1 f2) = (vale inter dom asig f1) --> (vale inter dom asig f2)
+--Caso 5: La valuacion del cuantificar universal es la conjuncion de todas las valuaciones de
+--la formula con la variable ligada.
 vale inter dom asig (A n f)     = and [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
+--Caso 6: La valuacion del cuantificador existencial es la disyuncion de todas las valuaciones
+--de la formula con la variable ligada.
 vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
 
+-- Auxiliar: Operador implicacion
 (-->) :: Bool -> Bool -> Bool
 (-->) x y = not x || y
 
