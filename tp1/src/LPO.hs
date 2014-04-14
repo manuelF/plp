@@ -24,9 +24,9 @@ operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 {--
  Utiliza pattern matching para examinar el tipo algebraico del unico argumento
  y devuelve True en caso de ser un literal o False en caso contrario.
- esLiteral  Pred "p" [Func "c" []]      ⟶ True
- esLiteral  No (Pred "p" [Func "c" []]) ⟶ True
- esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ⟶ False
+ esLiteral  Pred "p" [Func "c" []]      -> True
+ esLiteral  No (Pred "p" [Func "c" []]) -> True
+ esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ->  False
 --}
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _)      = True
@@ -100,8 +100,8 @@ instance Show Termino where
 terminoToString :: Termino -> String
 terminoToString = foldTermino mayusculirizar parentizar
 
-mayusculirizar ::Nombre -> Nombre
-mayusculirizar n = map toUpper n
+mayusculirizar :: Nombre -> Nombre
+mayusculirizar = map toUpper
 
 
 join::[a]->[[a]]->[a]
@@ -220,7 +220,7 @@ asignacion1 "Z" = 2
 --------------------
 --Ejemplo: evaluar asignacion1 (fTerm ejemploNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
 evaluar::Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
-evaluar asig ft  = foldTermino asig (\n r -> ft n r)
+evaluar asig ft  = foldTermino asig ft -- (\n r -> ft n r)
 
 --------------------
 -- Ejercicio 11
