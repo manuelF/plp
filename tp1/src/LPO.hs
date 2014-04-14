@@ -98,8 +98,7 @@ instance Show Termino where
   show = terminoToString
   
 terminoToString :: Termino -> String
-terminoToString = foldTermino mayusculirizar
-                              (\n r -> if null r then n else parentizar n r)
+terminoToString = foldTermino mayusculirizar parentizar
 
 mayusculirizar ::Nombre -> Nombre
 mayusculirizar n = map toUpper n
