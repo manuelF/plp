@@ -18,7 +18,9 @@ data Formula = Pred Nombre [Termino]
 
 operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 
----- Ejercicio 1
+--------------------
+-- Ejercicio 1
+--------------------
 {--
  Utiliza pattern matching para examinar el tipo algebraico del unico argumento
  y devuelve True en caso de ser un literal o False en caso contrario.
@@ -31,8 +33,9 @@ esLiteral (Pred _ _)      = True
 esLiteral (No (Pred _ _)) = True
 esLiteral _               = False
 
-
----- Ejercicio 2
+--------------------
+-- Ejercicio 2
+--------------------
 foldTermino ::   (Nombre -> b)         --casoVar 
             -> (Nombre -> [b] -> b)    --casoFunc
             -> Termino -> b            --termino
@@ -42,8 +45,9 @@ foldTermino casoVar casoFunc ter =
     Func n ts -> casoFunc n (map rec ts)
   where rec = foldTermino casoVar casoFunc
 
-
----- Ejercicio 3
+--------------------
+-- Ejercicio 3
+--------------------
 foldFormula ::   (Nombre -> [Termino] -> b) --casoPred 
             -> (b -> b)                     --casoNo
             -> (b -> b -> b)                --casoY
@@ -64,8 +68,9 @@ foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
     E n f1    -> casoE n (rec f1)
   where rec = foldFormula casoPred casoNo casoY casoO casoImp casoA casoE
 
-
----- Ejercicio 4
+--------------------
+-- Ejercicio 4
+--------------------
 --Esquema de recursión primitiva para fórmulas.
 recFormula :: (Nombre -> [Termino] -> b)
            -> (Formula -> b -> b)
@@ -86,8 +91,9 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
     g (A n a) = f6 a n (g a)
     g (E n a) = f7 a n (g a) 
 
-
----- Ejercicio 5
+--------------------
+-- Ejercicio 5
+--------------------
 instance Show Termino where
   show = terminoToString
   
@@ -107,8 +113,9 @@ join separador = foldr (\x res->if null res then x else x++separador++res) []
 parentizar :: Nombre -> [String] -> String
 parentizar s res = if null res then s else s++"("++(join "," res)++")"
 
-
----- Ejercicio 6
+--------------------
+-- Ejercicio 6
+--------------------
 instance Show Formula where
     show = formulaToString
 -- Toma una formula y foldea reemplazando cada constructor con un comportamiento
@@ -123,20 +130,22 @@ formulaToString = foldFormula
                     (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
                     (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
-
----- Ejercicio 7
+--------------------
+-- Ejercicio 7
+--------------------
 -- Toma una formula y foldea normalmente pero reemplazando las implicaciones con
 -- ~A o B.
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
-
----- Ejercicio 8
+--------------------
+-- Ejercicio 8
+--------------------
 -- Toma una formula y foldea negando las subformulas y reemplazando las implicaciones
 -- con ~A o B
 aFNN::Formula->Formula
-aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E
-
+aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E 
+{--
 negar :: Formula -> Formula
 negar (Pred n ts) = No (Pred n ts)
 negar (No f)      = f
@@ -144,12 +153,20 @@ negar (Y f1 f2)   = O (negar f1) (negar f2)
 negar (O f1 f2)   = Y (negar f1) (negar f2)
 negar (A n f)     = E n (negar f)
 negar (E n f)     = A n (negar f)
+--}
+negar = recFormula
+        (\n ts -> No (Pred n ts))
+        (\f r -> f)
+        (\f1 f2 r1 r2 -> O r1 r2)
+        (\f1 f2 r1 r2 -> Y r1 r2)
+        (\f1 f2 r1 r2 -> No (Imp r1 r2))
+        (\f n r -> E n r)
+        (\f n r -> A n r)
+                    
 
-
-
-
--- Tiene que haber una manera mejor de escribir esto
----- Ejercicio 9
+--------------------
+-- Ejercicio 9
+--------------------
 -- Toma una formula y devuelve el conjunto de nombres de todas las variables
 -- no ligadas.
 fv :: Formula -> [Nombre]
@@ -199,24 +216,44 @@ asignacion1 "X" = 0
 asignacion1 "Y" = 1
 asignacion1 "Z" = 2
 
----- Ejercicio 10
+--------------------
+-- Ejercicio 10
+--------------------
 --Ejemplo: evaluar asignacion1 (fTerm ejemploNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
 evaluar::Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
 evaluar asig ft  = foldTermino asig (\n r -> ft n r)
 
-
----- Ejercicio 11
+--------------------
+-- Ejercicio 11
+--------------------
 -- *****¿En asignacion todas las variables estan en mayuscula?*****
 actualizarAsignacion :: Nombre -> a -> Asignacion a -> Asignacion a
 actualizarAsignacion nombre valor asig = \n -> if n == nombre
                                                then valor
                                                else asig n
 
----- Ejercicio 12
+--------------------
+-- Ejercicio 12
+--------------------
 -- Se usa una asignación de valores a las variables libres. Pueden usar recursión
 -- explícita, pero aclaren por qué no encaja bien en fold ni rec.
 -- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
 -- es natural/sencillo. ¿por qué?
+
+-- Ejemplos (agreguen alguno con otra interpretación).
+
+-- vale ejemploNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
+-- True
+
+-- vale ejemploNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "X",Func "suc" [Var "X"]])
+-- False
+
+--vale ejemploNat [0,1] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
+--True
+
+--vale ejemploNat [0] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
+--False
+
 
 vale::Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 {--
@@ -246,16 +283,3 @@ vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v 
 (-->) :: Bool -> Bool -> Bool
 (-->) x y = not x || y
 
--- Ejemplos (agreguen alguno con otra interpretación).
-
--- vale ejemploNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
--- True
-
--- vale ejemploNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "X",Func "suc" [Var "X"]])
--- False
-
---vale ejemploNat [0,1] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
---True
-
---vale ejemploNat [0] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
---False
