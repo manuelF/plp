@@ -57,15 +57,16 @@ testsParentizar = test [
 	]
 
 testsEsLiteral = test [
-       esLiteral form1 ~=? False,
        esLiteral form2 ~=? False,
-       esLiteral form5 ~=? True,
-       esLiteral form6 ~=? True
+       esLiteral form3 ~=? False,
+       esLiteral p ~=? True,
+       esLiteral noQ ~=? True
        ]
 
 testsFv = test [
-         fv form1 ~=? ["x"],
-         fv form3 ~=? []
+         fv form1 ~=? ["x"], --form1  = ¬(¬P(X))
+         fv form26 ~=? [],   --form26 = ∀X.(¬(¬P(X)))
+         fv form27 ~=? ["y"] --form27 = ∀X.(P(X)∧Q(X,Y))
          ]
 
 {-
