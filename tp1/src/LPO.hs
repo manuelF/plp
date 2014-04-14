@@ -119,14 +119,17 @@ instance Show Formula where
 formulaToString :: Formula -> String
 formulaToString = foldFormula
                     (\n ts  -> parentizar (mayusculirizar n) (map show ts))
-                    (\r     -> "¬" ++ r)
+                    --(\r     -> "¬(" ++ r ++ ")")
+                    (\r     -> if esReprDeLiteral r then  "¬" ++ r else "¬(" ++ r ++ ")")
                     (\r1 r2 -> r1 ++ "∧" ++ r2)
                     (\r1 r2 -> r1 ++ "∨" ++ r2)
                     (\r1 r2 -> r1 ++ "⊃" ++ r2)
                     (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
                     (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
---------------------
+esReprDeLiteral :: String -> Bool
+esReprDeLiteral s = null (filter (\x -> isInfixOf x s) operadoresLogicos)
+
 -- Ejercicio 7
 --------------------
 -- Toma una formula y foldea normalmente pero reemplazando las implicaciones con
