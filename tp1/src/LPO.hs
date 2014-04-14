@@ -141,7 +141,8 @@ eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 -- Ejercicio 8
 --------------------
 -- Toma una formula y foldea negando las subformulas y reemplazando las implicaciones
--- con ~A o B
+-- con ~A o B. La funcion usada en el fold para el caso del constructor 'No'
+-- es 'negar', que implementa la logica de como meter las negaciones adentro. 
 aFNN::Formula->Formula
 aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E 
 {--
@@ -191,12 +192,12 @@ data Interpretacion a = I {fTerm :: (Nombre->[a]->a), fPred :: (Nombre->[a]->Boo
 ejemploNat::Interpretacion Int
 ejemploNat = I fTerminos fPredicados where
   fTerminos nombreF | nombreF == "0" = const 0
-		    | nombreF == "suc" = \xs -> head xs + 1
-		    | nombreF == "suma" = sum
+                    | nombreF == "suc" = \xs -> head xs + 1
+                    | nombreF == "suma" = sum
   fPredicados nombreP | nombreP == "esCero" = \xs -> head xs == 0
-		      | nombreP == "esPar" = \xs -> mod (head xs) 2 == 0
-		      | nombreP == "mayor" = \xs -> (head xs) > (head (tail xs))
-		      | nombreP == "menor" = \xs -> (head xs) < (head (tail xs))
+                      | nombreP == "esPar" = \xs -> mod (head xs) 2 == 0
+                      | nombreP == "mayor" = \xs -> (head xs) > (head (tail xs))
+                      | nombreP == "menor" = \xs -> (head xs) < (head (tail xs))
 
 --Proyectores (ya están predefinidos).
 {-
