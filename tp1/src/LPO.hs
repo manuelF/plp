@@ -149,31 +149,34 @@ cambiarImp f1 f2 = O (No f1) f2
 ---------------
 
 aFNN :: Formula -> Formula
-aFNN = (cancelarNegaciones).(eliminarImplicaciones).(foldFormula Pred normalizarNegaciones Y O Imp A E)
+aFNN = (cancelarNegaciones).(foldFormula Pred normalizarNegaciones Y O Imp A E).(eliminarImplicaciones)
 
 normalizarNegaciones :: Formula -> Formula
 normalizarNegaciones = (\f -> if (esLiteral f) then No f else hundirNegaciones f)
 
 hundirNegaciones :: Formula -> Formula
-hundirNegaciones = foldFormula Pred negarNo negarY negarO negarImp negarE negarA
+hundirNegaciones = foldFormula negarPred negarNo negarY negarO negarImp negarA negarE
         
+negarPred :: Nombre -> [Termino] -> Formula
+negarPred = (\n terms -> No (Pred n terms))
+
 negarNo :: Formula -> Formula
-negarNo = (\f -> if esLiteral f then No f else f)
+negarNo = (\f -> No f)
 
 negarY :: Formula -> Formula -> Formula
-negarY = (\f1 f2 -> O (No f1) (No f2))
+negarY = (\f1 f2 -> O f1 f2)
 
 negarO :: Formula -> Formula -> Formula
-negarO = (\f1 f2 -> Y (No f1) (No f2))
+negarO = (\f1 f2 -> Y f1 f2)
 
 negarImp :: Formula -> Formula -> Formula
 negarImp = (\f1 f2 -> Y f1 (No f2))
 
 negarE :: Nombre -> Formula -> Formula
-negarE = (\n f -> E n (No f))
+negarE = (\n f -> A n f)
 
 negarA :: Nombre -> Formula -> Formula
-negarA = (\n f -> A n (No f))
+negarA = (\n f -> E n f)
 
 cancelarNegaciones  :: Formula -> Formula
 cancelarNegaciones = foldFormula Pred auxNo Y O Imp A E
@@ -192,7 +195,7 @@ estaNegada = foldFormula
     (\n f -> False)
 
 removerNegacion :: Formula -> Formula
-removerNegacion = foldFormula Pred (\f->f) Y O Imp E A
+removerNegacion = foldFormula Pred (\f->f) Y O Imp A E
 
 ---------------
 -- Ejercicio 9
