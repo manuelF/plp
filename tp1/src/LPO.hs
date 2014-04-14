@@ -16,6 +16,7 @@ data Formula = Pred Nombre [Termino]
              | A Nombre Formula
              | E Nombre Formula
 
+operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 
 ---- Ejercicio 1
 {--
@@ -26,9 +27,9 @@ data Formula = Pred Nombre [Termino]
  esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ⟶ False
 --}
 esLiteral :: Formula -> Bool
-esLiteral (Pred _ _) = True
-esLiteral (No _)     = True
-esLiteral _          = False
+esLiteral (Pred _ _)      = True
+esLiteral (No (Pred _ _)) = True
+esLiteral _               = False
 
 
 ---- Ejercicio 2
@@ -96,7 +97,6 @@ terminoToString = foldTermino mayusculirizar
 
 mayusculirizar ::Nombre -> Nombre
 mayusculirizar n = map toUpper n
---mayusculirizar n = [toUpper l | l <- n]
 
 
 join::[a]->[[a]]->[a]
@@ -110,7 +110,6 @@ parentizar s res = if null res then s else s++"("++(join "," res)++")"
 
 ---- Ejercicio 6
 instance Show Formula where
--- Operadores lógicos: "¬","∧","∨","⊃","∀","∃"
     show = formulaToString
 -- Toma una formula y foldea reemplazando cada constructor con un comportamiento
 -- especifico sobre como imprimir en ese caso.
@@ -123,7 +122,7 @@ formulaToString = foldFormula
                     (\r1 r2 -> r1 ++ "⊃" ++ r2)
                     (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
                     (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
-                    
+
 
 ---- Ejercicio 7
 -- Toma una formula y foldea normalmente pero reemplazando las implicaciones con
@@ -136,15 +135,21 @@ eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 -- Toma una formula y foldea negando las subformulas y reemplazando las implicaciones
 -- con ~A o B
 aFNN::Formula->Formula
-aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1 ) r2) A E
+aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E
 
 negar :: Formula -> Formula
-negar (No f) = f
-negar f      = No f
+negar (Pred n ts) = No (Pred n ts)
+negar (No f)      = f
+negar (Y f1 f2)   = O (negar f1) (negar f2)
+negar (O f1 f2)   = Y (negar f1) (negar f2)
+negar (A n f)     = E n (negar f)
+negar (E n f)     = A n (negar f)
 
 
----- Ejercicio 9
+
+
 -- Tiene que haber una manera mejor de escribir esto
+---- Ejercicio 9
 -- Toma una formula y devuelve el conjunto de nombres de todas las variables
 -- no ligadas.
 fv :: Formula -> [Nombre]

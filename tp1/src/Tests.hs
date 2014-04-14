@@ -44,6 +44,22 @@ form4 = A "x" (E "y" (O (No (Pred "p" [Var "x"])) (Pred "q" [Var "x", Var "y"]))
 form5 = No (Pred "p" [Func "c" []])
 -- p(c())
 form6 = Pred "p" [Func "c" []]
+--  ¬¬P(X)
+form7 = No (No (Pred "P" [Var "X"]))
+-- P(X)
+form8 = Pred "P" [Var "X"]
+-- ¬(Q(X, Y ) ∧ R(Z))
+form9 = (No (Y (Pred "Q" [Var "X", Var "Y"]) (Pred "R" [Var "Z"])))
+-- ~Q(X,Y) v ~R(Z)
+form10 = O (No (Pred "Q" [Var "X", Var "Y"])) (No (Pred "R" [Var "Z"]))
+-- ∃Y.(¬∃X.(P(X) ⊃ Q(X,Y)))
+form11 = E "Y" (No (E "X" (Imp (Pred "P" [Var "X"]) (Pred "Q" [Var "X", Var "Y"]))))
+--  ∃Y.(∀X.(P(X) ∧ ¬Q(X,Y)))
+form12 = E "Y" (A "X" (Y (Pred "P" [Var "X"]) (No (Pred "Q" [Var "X", Var "Y"]))))
+-- ∀X.(∃Y (P(X) ⊃ Q(X,Y)))
+form13 = A "X" (E "Y" (Imp (Pred "P" [Var "X"]) (Pred "Q" [Var "X", Var "Y"])))
+-- ∀X.(∃Y.(¬P(X) ∨ Q(X,Y)))
+form14 = A "X" (E "Y" (O (No (Pred "P" [Var "X"])) (Pred "Q" [Var "X", Var "Y"])))
 
 allTests = test [ 
 	"join" ~: testsJoin,
@@ -80,7 +96,11 @@ testsEliminarImplicaciones = test [
         ]
 
 testsAFNN = test [
-         formulaToString (aFNN  form3) ~=? formulaToString form4
+         formulaToString (aFNN form3) ~=? formulaToString form4,
+         formulaToString (aFNN form7) ~=? formulaToString form8,
+         formulaToString (aFNN form9) ~=? formulaToString form10,
+         formulaToString (aFNN form11) ~=? formulaToString form12,
+         formulaToString (aFNN form13) ~=? formulaToString form14
          ]
 
 testsFv = test [
