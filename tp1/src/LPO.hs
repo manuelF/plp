@@ -95,10 +95,7 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
 -- Ejercicio 5
 --------------------
 instance Show Termino where
-  show = terminoToString
-  
-terminoToString :: Termino -> String
-terminoToString = foldTermino mayusculirizar parentizar
+  show = foldTermino mayusculirizar parentizar
 
 mayusculirizar :: Nombre -> Nombre
 mayusculirizar = map toUpper
@@ -121,7 +118,7 @@ instance Show Formula where
 -- especifico sobre como imprimir en ese caso.
 formulaToString :: Formula -> String
 formulaToString = foldFormula
-                    (\n ts  -> parentizar (mayusculirizar n) (map terminoToString ts))
+                    (\n ts  -> parentizar (mayusculirizar n) (map show ts))
                     (\r     -> "¬" ++ r)
                     (\r1 r2 -> r1 ++ "∧" ++ r2)
                     (\r1 r2 -> r1 ++ "∨" ++ r2)
