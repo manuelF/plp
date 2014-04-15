@@ -146,6 +146,12 @@ esReprDeLiteral s = not (any (\x -> isInfixOf x s) operadoresLogicos)
 --------------------
 -- Toma una formula y foldea como si fuera identidad pero reemplazando las
 -- implicaciones con ~A o B.
+-- Ejemplo:
+-- form20
+--  P(X)⊃¬Q(X,Y)
+-- eliminarImplicaciones form20
+--  ¬P(X)∨¬Q(X,Y)
+
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
@@ -155,6 +161,12 @@ eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 -- Toma una formula y foldea negando las subformulas y reemplazando las implicaciones
 -- con ~A o B. La funcion usada en el fold para el caso del constructor 'No'
 -- es 'negar', que implementa la logica de como meter las negaciones adentro.
+-- Ejemplo:
+-- form21
+--  ¬P(X)⊃¬Q(X,Y)
+-- aFNN form21
+--  P(X)∨¬Q(X,Y)
+
 aFNN::Formula->Formula
 aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E
 
@@ -174,6 +186,12 @@ negar = recFormula
 --------------------
 -- Toma una formula y devuelve la lista de nombres de todas las variables
 -- no ligadas.
+-- Ejemplo:
+-- show form27
+--  ∀X.(P(X)∧Q(X,Y))
+-- fv form27
+--  ["y"]
+
 fv :: Formula -> [Nombre]
 fv = foldFormula (\n ts -> concat (map obtenerVariables ts)) -- Caso Pred: Devuelve todas las variable.
                  id                                          -- Caso No: Si es una negacion de formula, las mismas variables.
