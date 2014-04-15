@@ -123,6 +123,9 @@ parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 --------------------
 -- Toma una formula y foldea reemplazando cada constructor con un comportamiento
 -- especifico sobre como imprimir en ese caso.
+-- Ejemplo:
+--  show form1
+--  ¬(¬P(X))
 instance Show Formula where
     show =  foldFormula
             (\n ts  -> parentizar (mayusculirizar n) (map show ts))
@@ -238,6 +241,9 @@ evaluar = foldTermino
 --------------------
 -- Dada un nombre de una variable, un valor y una asignacion, devuelve una funcion
 -- que actualiza el valor de la asignacion al pasado por parametro si el nombre coincide.
+
+-- Ejemplo: evaluar (actualizarAsignacion "Y" 20 asignacion1) (fTerm interpretacionZ) term2
+-- -80
 actualizarAsignacion :: Nombre -> a -> Asignacion a -> Asignacion a
 actualizarAsignacion nombre valor asig = \n -> if n == nombre
                                                then valor
