@@ -112,20 +112,17 @@ parentizar s res = if null res then s else s++"("++(join "," res)++")"
 --------------------
 -- Ejercicio 6
 --------------------
-instance Show Formula where
-    show = formulaToString
 -- Toma una formula y foldea reemplazando cada constructor con un comportamiento
 -- especifico sobre como imprimir en ese caso.
-formulaToString :: Formula -> String
-formulaToString = foldFormula
-                    (\n ts  -> parentizar (mayusculirizar n) (map show ts))
-                    --(\r     -> "¬(" ++ r ++ ")")
-                    (\r     -> if esReprDeLiteral r then  "¬" ++ r else "¬(" ++ r ++ ")")
-                    (\r1 r2 -> r1 ++ "∧" ++ r2)
-                    (\r1 r2 -> r1 ++ "∨" ++ r2)
-                    (\r1 r2 -> r1 ++ "⊃" ++ r2)
-                    (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
-                    (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
+instance Show Formula where
+    show =  foldFormula
+            (\n ts  -> parentizar (mayusculirizar n) (map show ts))
+            (\r     -> if esReprDeLiteral r then  "¬" ++ r else "¬(" ++ r ++ ")")
+            (\r1 r2 -> r1 ++ "∧" ++ r2)
+            (\r1 r2 -> r1 ++ "∨" ++ r2)
+            (\r1 r2 -> r1 ++ "⊃" ++ r2)
+            (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
+            (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
 esReprDeLiteral :: String -> Bool
 esReprDeLiteral s = null (filter (\x -> isInfixOf x s) operadoresLogicos)
@@ -145,15 +142,8 @@ eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 -- es 'negar', que implementa la logica de como meter las negaciones adentro. 
 aFNN::Formula->Formula
 aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E 
-{--
+
 negar :: Formula -> Formula
-negar (Pred n ts) = No (Pred n ts)
-negar (No f)      = f
-negar (Y f1 f2)   = O (negar f1) (negar f2)
-negar (O f1 f2)   = Y (negar f1) (negar f2)
-negar (A n f)     = E n (negar f)
-negar (E n f)     = A n (negar f)
---}
 negar = recFormula
         (\n ts -> No (Pred n ts))
         (\f r -> f)
@@ -199,6 +189,7 @@ ejemploNat = I fTerminos fPredicados where
                       | nombreP == "mayor" = \xs -> (head xs) > (head (tail xs))
                       | nombreP == "menor" = \xs -> (head xs) < (head (tail xs))
 
+
 --Proyectores (ya están predefinidos).
 {-
 fTerm :: Interpretacion a -> (Nombre->[a]->a)
@@ -226,7 +217,6 @@ evaluar asig ft  = foldTermino asig ft -- (\n r -> ft n r)
 --------------------
 -- Ejercicio 11
 --------------------
--- *****¿En asignacion todas las variables estan en mayuscula?*****
 actualizarAsignacion :: Nombre -> a -> Asignacion a -> Asignacion a
 actualizarAsignacion nombre valor asig = \n -> if n == nombre
                                                then valor

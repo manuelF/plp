@@ -35,13 +35,13 @@ expected ~~ actual = (sort expected) == (sort actual)
 allTests = test [ 
 	"join" ~: testsJoin,
 	"parentizar" ~: testsParentizar,
-  "esLiteral" ~: testsEsLiteral,
-  "Formula.show" ~: testsShowFormula,
-  "eliminarImplicaciones" ~: testsEliminarImplicaciones,
-  "aFNN" ~: testsAFNN,
-  "FV" ~: testsFv,
---  "evaluar" ~: testsEvaluar,
-  "actualizarAsignacion" ~: testsActualizarAsignacion
+        "esLiteral" ~: testsEsLiteral,
+        "Formula.show" ~: testsShowFormula,
+        "eliminarImplicaciones" ~: testsEliminarImplicaciones,
+        "aFNN" ~: testsAFNN,
+        "FV" ~: testsFv,
+--        "evaluar" ~: testsEvaluar,
+        "actualizarAsignacion" ~: testsActualizarAsignacion
 	]
 
 testsJoin = test [
