@@ -36,8 +36,8 @@ esLiteral _               = False
 -- Ejercicio 2
 --------------------
 -- Implementacion de recursion estructural sobre los terminos.
--- Si es una variable, se aplica la primer funcion sobre el nombre. Si es 
--- una Func, se aplica la segunda funcion sobre el nombre y el resultado de 
+-- Si es una variable, se aplica la primer funcion sobre el nombre. Si es
+-- una Func, se aplica la segunda funcion sobre el nombre y el resultado de
 -- foldear sobre la lista de terminos.
 foldTermino :: (Nombre -> b)           -- Caso Var
             -> (Nombre -> [b] -> b)    -- Caso Func
@@ -51,9 +51,9 @@ foldTermino casoVar casoFunc ter =
 -- Ejercicio 3
 --------------------
 -- Implementacion de recursion estructural sobre las formulas.
--- Aplica la funcion correspondiente dada la estructura del parametro. 
+-- Aplica la funcion correspondiente dada la estructura del parametro.
 -- Antes de aplicar la funcion, primero foldea sobre los parametros.
-foldFormula :: (Nombre -> [Termino] -> b)   -- Caso Pred 
+foldFormula :: (Nombre -> [Termino] -> b)   -- Caso Pred
             -> (b -> b)                     -- Caso No
             -> (b -> b -> b)                -- Caso Y
             -> (b -> b -> b)                -- Caso O
@@ -65,12 +65,12 @@ foldFormula :: (Nombre -> [Termino] -> b)   -- Caso Pred
 foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
   case f of
     Pred n ts -> casoPred n ts
-    No f1     -> casoNo (rec f1)
-    Y f1 f2   -> casoY (rec f1) (rec f2)
-    O f1 f2   -> casoO (rec f1) (rec f2)
-    Imp f1 f2 -> casoImp (rec f1) (rec f2)
-    A n f1    -> casoA n (rec f1)
-    E n f1    -> casoE n (rec f1)
+    No a      -> casoNo (rec a)
+    Y a b     -> casoY (rec a) (rec b)
+    O a b     -> casoO (rec a) (rec b)
+    Imp a b   -> casoImp (rec a) (rec b)
+    A n a     -> casoA n (rec a)
+    E n a     -> casoE n (rec a)
   where rec = foldFormula casoPred casoNo casoY casoO casoImp casoA casoE
 
 --------------------
@@ -86,15 +86,15 @@ recFormula :: (Nombre -> [Termino] -> b)          -- Caso Pred
            -> (Formula -> Nombre -> b -> b)       -- Caso E
            -> Formula
            -> b
-recFormula f1 f2 f3 f4 f5 f6 f7 = g 
+recFormula casoPred casoNo casoY casoO casoImp casoA casoE = g
   where
-    g (Pred n t) = f1 n t
-    g (No a) = f2 a (g a) 
-    g (Y a b) = f3 a b (g a) (g b) 
-    g (O a b) = f4 a b (g a) (g b)
-    g (Imp a b) = f5 a b (g a) (g b)
-    g (A n a) = f6 a n (g a)
-    g (E n a) = f7 a n (g a) 
+    g (Pred n t)  = casoPred n t
+    g (No a)      = casoNo a (g a)
+    g (Y a b)     = casoY a b (g a) (g b)
+    g (O a b)     = casoO a b (g a) (g b)
+    g (Imp a b)   = casoImp a b (g a) (g b)
+    g (A n a)     = casoA a n (g a)
+    g (E n a)     = casoE a n (g a)
 
 --------------------
 -- Ejercicio 5
@@ -133,7 +133,7 @@ instance Show Formula where
             (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
             (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
--- Funcion auxiliar que verifica si en una representacion en string de una formula 
+-- Funcion auxiliar que verifica si en una representacion en string de una formula
 -- hay algun operador logico. Chequeo rapido de si es un literal o no.
 esReprDeLiteral :: String -> Bool
 esReprDeLiteral s = not (any (\x -> isInfixOf x s) operadoresLogicos)
@@ -141,7 +141,7 @@ esReprDeLiteral s = not (any (\x -> isInfixOf x s) operadoresLogicos)
 --------------------
 -- Ejercicio 7
 --------------------
--- Toma una formula y foldea como si fuera identidad pero reemplazando las 
+-- Toma una formula y foldea como si fuera identidad pero reemplazando las
 -- implicaciones con ~A o B.
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
@@ -151,21 +151,21 @@ eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 --------------------
 -- Toma una formula y foldea negando las subformulas y reemplazando las implicaciones
 -- con ~A o B. La funcion usada en el fold para el caso del constructor 'No'
--- es 'negar', que implementa la logica de como meter las negaciones adentro. 
+-- es 'negar', que implementa la logica de como meter las negaciones adentro.
 aFNN::Formula->Formula
-aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E 
+aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E
 
--- Funcion auxiliar que niega los terminos internos de una formula. 
+-- Funcion auxiliar que niega los terminos internos de una formula.
 negar :: Formula -> Formula
 negar = recFormula
         (\n ts -> No (Pred n ts))         -- Caso Pred: Negar los predicados.
         (\f r -> f)                       -- Caso No: Quitar la negacion.
-        (\f1 f2 r1 r2 -> O r1 r2)         -- Caso Y: Negar Y -> O   
+        (\f1 f2 r1 r2 -> O r1 r2)         -- Caso Y: Negar Y -> O
         (\f1 f2 r1 r2 -> Y r1 r2)         -- Caso O: Negar O -> Y
         (\f1 f2 r1 r2 -> No (Imp r1 r2))  -- Caso Imp: Negar la implicacion
-        (\f n r -> E n r)                 -- Caso A: Negar A -> E 
+        (\f n r -> E n r)                 -- Caso A: Negar A -> E
         (\f n r -> A n r)                 -- Caso E: Negar E -> A
-                    
+
 --------------------
 -- Ejercicio 9
 --------------------
@@ -177,15 +177,15 @@ fv = foldFormula (\n ts -> concat (map obtenerVariables ts)) -- Caso Pred: Devue
                  (\r1 r2 -> nub (r1 ++ r2))                  -- Caso Y: Devolvemos las desduplicaciones de ambas subformulas.
                  (\r1 r2 -> nub (r1 ++ r2))                  -- Caso O: Idem ^^
                  (\r1 r2 -> nub (r1 ++ r2))                  -- Caso Imp: Idem ^^
-                 (\n  r  -> filter (/=n) r)                  -- Caso A: Devolvemos las variables de las subformulas que sean 
+                 (\n  r  -> filter (/=n) r)                  -- Caso A: Devolvemos las variables de las subformulas que sean
                                                              --     distintas a la ligada variable ligada aca.
                  (\n r   -> filter (/=n) r)                  -- Caso E: Idem ^^
 
 -- Proyeccion de los nombres de un termino en una lista.
-obtenerVariables :: Termino -> [Nombre] 
+obtenerVariables :: Termino -> [Nombre]
 obtenerVariables = foldTermino (:[]) (\n r -> concat r)
 
-  
+
 --Interpretación en un dominio a. Una función para términos y otra para predicados.
 --Basta con que las funciones estén bien definidas para su dominio esperado.
 data Interpretacion a = I {fTerm :: (Nombre->[a]->a), fPred :: (Nombre->[a]->Bool)}
