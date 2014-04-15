@@ -40,7 +40,7 @@ allTests = test [
         "eliminarImplicaciones" ~: testsEliminarImplicaciones,
         "aFNN" ~: testsAFNN,
         "FV" ~: testsFv,
---        "evaluar" ~: testsEvaluar,
+        "evaluar" ~: testsEvaluar,
         "actualizarAsignacion" ~: testsActualizarAsignacion
 	]
 
@@ -69,11 +69,12 @@ testsFv = test [
          fv form27 ~=? ["y"] --form27 = ∀X.(P(X)∧Q(X,Y))
          ]
 
-{-
 testsEvaluar = test [
-        evaluar asignacion1 (fTerm ejemploNat)  term1 ~=? 2
+        evaluar asignacion1 (fTerm interpretacionNat)  term1 ~=? 2,
+        evaluar asignacion2 (fTerm interpretacionNat)  term1 ~=? 21,
+        evaluar asignacion1 (fTerm interpretacionZ)  term2 ~=? -4
         ]
--}
+
 testsActualizarAsignacion = test [
         (actualizarAsignacion "X" 99 asignacion1) "X" ~=? 99,
         (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1

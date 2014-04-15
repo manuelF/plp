@@ -163,3 +163,18 @@ form139 = E "Y" (form60)           -- ∃Y.(¬(∀X.(P(X)∨Q(X,Y))))
 form140 = E "Y" (form68)           -- ∃Y.(¬(∀X.(P(X)⊃Q(X,Y)))) 
 form141 = E "y" (form102)          -- ∃Y.(¬(∃X.(P(X)∧Q(X,Y))))
 
+
+-- Asignaciones
+asignacion1::Asignacion Int
+asignacion1 "X" = 0
+asignacion1 "Y" = 1
+asignacion1 "Z" = 2
+
+asignacion2::Asignacion Int
+asignacion2 "X" = 10
+asignacion2 "Y" = 10
+asignacion2 "Z" = 2
+
+-- Expresiones
+term1 = Func "suma" [Func "suc" [Var "X"], Var "Y"] -- suma(suc(x),y)
+term2 = Func "producto" [Func "invertir" [Var "Y"], Var "Z", Var "Z"] -- producto(invertir(y), z, z)

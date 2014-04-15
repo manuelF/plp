@@ -181,7 +181,7 @@ fv = foldFormula (\n ts -> concat (map obtenerVariables ts)) -- Caso Pred: Devue
                                                              --     distintas a la ligada variable ligada aca.
                  (\n r   -> filter (/=n) r)                  -- Caso E: Idem ^^
 
--- Proyeccion de los nombres de un termino en una lista.
+-- Proyeccion de los nombres de las variables de un termino en una lista.
 obtenerVariables :: Termino -> [Nombre]
 obtenerVariables = foldTermino (:[]) (\n r -> concat r)
 
@@ -191,8 +191,8 @@ obtenerVariables = foldTermino (:[]) (\n r -> concat r)
 data Interpretacion a = I {fTerm :: (Nombre->[a]->a), fPred :: (Nombre->[a]->Bool)}
 
 --Ejemplo para pruebas:
-ejemploNat::Interpretacion Int
-ejemploNat = I fTerminos fPredicados where
+interpretacionNat::Interpretacion Int
+interpretacionNat = I fTerminos fPredicados where
   fTerminos nombreF | nombreF == "0" = const 0
                     | nombreF == "suc" = \xs -> head xs + 1
                     | nombreF == "suma" = sum
@@ -201,6 +201,16 @@ ejemploNat = I fTerminos fPredicados where
                       | nombreP == "mayor" = \xs -> (head xs) > (head (tail xs))
                       | nombreP == "menor" = \xs -> (head xs) < (head (tail xs))
 
+interpretacionZ::Interpretacion Int
+interpretacionZ = I fTerminos fPredicados where
+  fTerminos nombreF | nombreF == "0" = const 0
+                    | nombreF == "suc" = \xs -> head xs + 1
+                    | nombreF == "suma" = sum
+                    | nombreF == "invertir" = \xs -> head xs * (-1) 
+                    | nombreF == "producto" = product
+  fPredicados nombreP | nombreP == "esCero" = \xs -> head xs == 0
+                      | nombreP == "esPositivo" = \xs -> head xs > 0
+                      | nombreP == "esNegativo" = \xs -> head xs < 0
 
 --Proyectores (ya están predefinidos).
 {-
@@ -213,16 +223,11 @@ fPred (I _ fP) = fP
 
 type Asignacion a = Nombre -> a
 
---Ejemplo para pruebas:
-asignacion1::Asignacion Int
-asignacion1 "X" = 0
-asignacion1 "Y" = 1
-asignacion1 "Z" = 2
-
 --------------------
 -- Ejercicio 10
 --------------------
---Ejemplo: evaluar asignacion1 (fTerm ejemploNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
+-- Devuelve un valor para una formula dada una asignacion de sus variables.
+-- Ejemplo: evaluar asignacion1 (fTerm interpretacionNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
 evaluar::Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
 evaluar = foldTermino
 
@@ -246,16 +251,16 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 
 -- Ejemplos (agreguen alguno con otra interpretación).
 
--- vale ejemploNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
+-- vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
 -- True
 
--- vale ejemploNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "X",Func "suc" [Var "X"]])
+-- vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "X",Func "suc" [Var "X"]])
 -- False
 
---vale ejemploNat [0,1] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
+--vale interpretacionNat [0,1] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
 --True
 
---vale ejemploNat [0] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
+--vale interpretacionNat [0] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"]))
 --False
 
 
@@ -268,18 +273,18 @@ vale inter dom asig f = foldFormula (\n ts -> fPred inter n ts)
                                     (-->)
                                     "Booom fold"
 --}
---Caso 1: La valuacion de un predicado es la valuacion de sus terminos dadas las asignaciones.
+--Caso Pred: La valuacion de un predicado es la valuacion de sus terminos dadas las asignaciones.
 vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
---Caso 2: La valuacion de una negacion es la negacion de la valuacion.
+--Caso No: La valuacion de una negacion es la negacion de la valuacion.
 vale inter dom asig (No f)      = not (vale inter dom asig f)
---Caso 3: La valuacion de una conjuncion es la conjuncion de las valuaciones.
+--Caso Y: La valuacion de una conjuncion es la conjuncion de las valuaciones.
 vale inter dom asig (Y f1 f2)   = (vale inter dom asig f1) && (vale inter dom asig f2)
---Caso 4: La valuacion de una implicacion es la implicacion de las valuaciones.
+--Caso Imp: La valuacion de una implicacion es la implicacion de las valuaciones.
 vale inter dom asig (Imp f1 f2) = (vale inter dom asig f1) --> (vale inter dom asig f2)
---Caso 5: La valuacion del cuantificar universal es la conjuncion de todas las valuaciones de
+--Caso A: La valuacion del cuantificar universal es la conjuncion de todas las valuaciones de
 --la formula con la variable ligada.
 vale inter dom asig (A n f)     = and [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
---Caso 6: La valuacion del cuantificador existencial es la disyuncion de todas las valuaciones
+--Caso E: La valuacion del cuantificador existencial es la disyuncion de todas las valuaciones
 --de la formula con la variable ligada.
 vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
 
