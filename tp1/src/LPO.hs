@@ -21,13 +21,12 @@ operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 --------------------
 -- Ejercicio 1
 --------------------
-{--
- Utiliza pattern matching para examinar el tipo algebraico del unico argumento
- y devuelve True en caso de ser un literal o False en caso contrario.
- esLiteral  Pred "p" [Func "c" []]      -> True
- esLiteral  No (Pred "p" [Func "c" []]) -> True
- esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ->  False
---}
+-- Utiliza pattern matching para examinar el tipo algebraico del unico argumento
+-- y devuelve True en caso de ser un literal o False en caso contrario.
+-- Ejemplos:
+--  esLiteral  Pred "p" [Func "c" []]      -> True
+--  esLiteral  No (Pred "p" [Func "c" []]) -> True
+--  esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ->  False
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _)      = True
 esLiteral (No (Pred _ _)) = True
@@ -36,26 +35,29 @@ esLiteral _               = False
 --------------------
 -- Ejercicio 2
 --------------------
-foldTermino ::   (Nombre -> b)         --casoVar 
-            -> (Nombre -> [b] -> b)    --casoFunc
-            -> Termino -> b            --termino
+-- Implementacion de recursion estructural sobre los terminos.
+-- Si es una variable, se aplica la primer funcion sobre el nombre. Si es 
+-- una Func, se aplica la segunda funcion sobre el nombre y el resultado de 
+-- foldear sobre la lista de terminos.
+foldTermino ::   (Nombre -> b)         -- Caso Var
+            -> (Nombre -> [b] -> b)    -- Caso Func
+            -> Termino -> b            -- Termino
 foldTermino casoVar casoFunc ter =
   case ter of
     Var n     -> casoVar n
-    Func n ts -> casoFunc n (map rec ts)
-  where rec = foldTermino casoVar casoFunc
+    Func n ts -> casoFunc n (map (foldTermino casoVar casoFunc) ts)
 
 --------------------
 -- Ejercicio 3
 --------------------
-foldFormula ::   (Nombre -> [Termino] -> b) --casoPred 
-            -> (b -> b)                     --casoNo
-            -> (b -> b -> b)                --casoY
-            -> (b -> b -> b)                --casoO
-            -> (b -> b -> b)                --casoImp
-            -> (Nombre -> b -> b)           --casoA
-            -> (Nombre -> b -> b)           --casoE
-            -> Formula                      --parametro
+foldFormula ::   (Nombre -> [Termino] -> b) -- Caso Pred 
+            -> (b -> b)                     -- Caso No
+            -> (b -> b -> b)                -- Caso Y
+            -> (b -> b -> b)                -- Caso O
+            -> (b -> b -> b)                -- Caso Imp
+            -> (Nombre -> b -> b)           -- Caso A
+            -> (Nombre -> b -> b)           -- Caso E
+            -> Formula                      -- parametro
             -> b
 foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
   case f of
@@ -72,13 +74,13 @@ foldFormula casoPred casoNo casoY casoO casoImp casoA casoE f =
 -- Ejercicio 4
 --------------------
 --Esquema de recursión primitiva para fórmulas.
-recFormula :: (Nombre -> [Termino] -> b)
-           -> (Formula -> b -> b)
-           -> (Formula -> Formula -> b -> b -> b)
-           -> (Formula -> Formula -> b -> b -> b)
-           -> (Formula -> Formula -> b -> b -> b)
-           -> (Formula -> Nombre -> b -> b)
-           -> (Formula -> Nombre -> b -> b)
+recFormula :: (Nombre -> [Termino] -> b)          -- Caso Pred
+           -> (Formula -> b -> b)                 -- Caso No
+           -> (Formula -> Formula -> b -> b -> b) -- Caso Y
+           -> (Formula -> Formula -> b -> b -> b) -- Caso O
+           -> (Formula -> Formula -> b -> b -> b) -- Caso Imp
+           -> (Formula -> Nombre -> b -> b)       -- Caso A
+           -> (Formula -> Nombre -> b -> b)       -- Caso E
            -> Formula
            -> b
 recFormula f1 f2 f3 f4 f5 f6 f7 = g 
@@ -124,8 +126,10 @@ instance Show Formula where
             (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
             (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
+-- Funcion auxiliar que verifica si en una representacion en string de una formula 
+-- hay algun operador logico. Chequeo rapido de si es un literal o no.
 esReprDeLiteral :: String -> Bool
-esReprDeLiteral s = null (filter (\x -> isInfixOf x s) operadoresLogicos)
+esReprDeLiteral s = not (any (\x -> isInfixOf x s) operadoresLogicos)
 
 -- Ejercicio 7
 --------------------
@@ -143,21 +147,21 @@ eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 aFNN::Formula->Formula
 aFNN = foldFormula Pred negar Y O (\r1 r2 -> O (negar r1) r2) A E 
 
+-- Funcion auxiliar que niega los terminos internos de una formula. 
 negar :: Formula -> Formula
 negar = recFormula
-        (\n ts -> No (Pred n ts))
-        (\f r -> f)
-        (\f1 f2 r1 r2 -> O r1 r2)
-        (\f1 f2 r1 r2 -> Y r1 r2)
-        (\f1 f2 r1 r2 -> No (Imp r1 r2))
-        (\f n r -> E n r)
-        (\f n r -> A n r)
+        (\n ts -> No (Pred n ts))         -- Caso Pred: Negar los predicados.
+        (\f r -> f)                       -- Caso No: Quitar la negacion.
+        (\f1 f2 r1 r2 -> O r1 r2)         -- Caso Y: Negar Y -> O   
+        (\f1 f2 r1 r2 -> Y r1 r2)         -- Caso O: Negar O -> Y
+        (\f1 f2 r1 r2 -> No (Imp r1 r2))  -- Caso Imp: Negar la implicacion
+        (\f n r -> E n r)                 -- Caso A: Negar A -> E 
+        (\f n r -> A n r)                 -- Caso E: Negar E -> A
                     
-
 --------------------
 -- Ejercicio 9
 --------------------
--- Toma una formula y devuelve el conjunto de nombres de todas las variables
+-- Toma una formula y devuelve la lista de nombres de todas las variables
 -- no ligadas.
 fv :: Formula -> [Nombre]
 fv = foldFormula (\n ts -> concat (map obtenerVariables ts)) -- Caso Pred: Devuelve todas las variable.
@@ -212,11 +216,13 @@ asignacion1 "Z" = 2
 --------------------
 --Ejemplo: evaluar asignacion1 (fTerm ejemploNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
 evaluar::Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
-evaluar asig ft  = foldTermino asig ft -- (\n r -> ft n r)
+evaluar = foldTermino
 
 --------------------
 -- Ejercicio 11
 --------------------
+-- Dada un nombre de una variable, un valor y una asignacion, devuelve una funcion
+-- que actualiza el valor de la asignacion al pasado por parametro si el nombre coincide.
 actualizarAsignacion :: Nombre -> a -> Asignacion a -> Asignacion a
 actualizarAsignacion nombre valor asig = \n -> if n == nombre
                                                then valor
