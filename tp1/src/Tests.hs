@@ -44,6 +44,15 @@ allTests = test [
         "actualizarAsignacion" ~: testsActualizarAsignacion
 	]
 
+-- Tests ejercicio 1
+testsEsLiteral = test [
+       esLiteral form2 ~=? False,
+       esLiteral form3 ~=? False,
+       esLiteral p ~=? True,
+       esLiteral noQ ~=? True
+       ]
+
+
 testsJoin = test [
 	join "," [] ~=? "",
 	join "," ["x"] ~=? "x",
@@ -56,33 +65,8 @@ testsParentizar = test [
 	parentizar "f" ["x", "y"] ~=? "f(x,y)"
 	]
 
-testsEsLiteral = test [
-       esLiteral form2 ~=? False,
-       esLiteral form3 ~=? False,
-       esLiteral p ~=? True,
-       esLiteral noQ ~=? True
-       ]
 
-testsFv = test [
-         fv form1 ~=? ["x"], --form1  = ¬(¬P(X))
-         fv form26 ~=? [],   --form26 = ∀X.(¬(¬P(X)))
-         fv form27 ~=? ["y"] --form27 = ∀X.(P(X)∧Q(X,Y))
-         ]
-
-testsEvaluar = test [
-        evaluar asignacion1 (fTerm interpretacionNat)  term1 ~=? 2,
-        evaluar asignacion2 (fTerm interpretacionNat)  term1 ~=? 21,
-        evaluar asignacion1 (fTerm interpretacionZ)  term2 ~=? -4
-        ]
-
-testsActualizarAsignacion = test [
-        (actualizarAsignacion "X" 99 asignacion1) "X" ~=? 99,
-        (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1
-        ]
-
-
-
--- Ejercicio 6
+-- Tests ejercicio 5 y 6
 testsShowFormula = test [
         show form1   ~=? "¬(¬P(X))",
         show form2   ~=? "P(X)∧Q(X,Y)",
@@ -227,8 +211,7 @@ testsShowFormula = test [
         show form141 ~=? "∃Y.(¬(∃X.(P(X)∧Q(X,Y))))"
     ]
 
-
--- Ejercicio 7
+-- Tests ejercicio 7
 testsEliminarImplicaciones = test [
         show (eliminarImplicaciones form18)  ~=? "¬P(X)∨Q(X,Y)",
         show (eliminarImplicaciones form19)  ~=? "¬(¬P(X))∨Q(X,Y)",
@@ -276,9 +259,7 @@ testsEliminarImplicaciones = test [
         show (eliminarImplicaciones form140) ~=? "∃Y.(¬(∀X.(¬P(X)∨Q(X,Y))))"
         ]
 
-
--- Ejercicio 8
-
+-- Tests ejercicio 8
 testsAFNN = test [
         show (aFNN  form1)   ~=? "P(X)",
         show (aFNN  form6)   ~=? "¬P(X)∨¬Q(X,Y)",
@@ -392,3 +373,24 @@ testsAFNN = test [
         show (aFNN  form140) ~=? "∃Y.(∃X.(P(X)∧¬Q(X,Y)))",
         show (aFNN  form141) ~=? "∃Y.(∀X.(¬P(X)∨¬Q(X,Y)))"
          ]
+
+-- Tests ejercicio 9
+testsFv = test [
+         fv form1 ~=? ["x"], --form1  = ¬(¬P(X))
+         fv form26 ~=? [],   --form26 = ∀X.(¬(¬P(X)))
+         fv form27 ~=? ["y"] --form27 = ∀X.(P(X)∧Q(X,Y))
+         ]
+-- Tests ejercicio 11
+testsActualizarAsignacion = test [
+        (actualizarAsignacion "X" 99 asignacion1) "X" ~=? 99,
+        (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1
+        ]
+
+-- Tests ejercicio 12
+testsEvaluar = test [
+        evaluar asignacion1 (fTerm interpretacionNat)  term1 ~=? 2,
+        evaluar asignacion2 (fTerm interpretacionNat)  term1 ~=? 21,
+        evaluar asignacion1 (fTerm interpretacionZ)  term2 ~=? -4
+        ]
+
+
