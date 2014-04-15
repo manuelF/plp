@@ -39,7 +39,7 @@ esLiteral _               = False
 -- Si es una variable, se aplica la primer funcion sobre el nombre. Si es 
 -- una Func, se aplica la segunda funcion sobre el nombre y el resultado de 
 -- foldear sobre la lista de terminos.
-foldTermino ::   (Nombre -> b)         -- Caso Var
+foldTermino :: (Nombre -> b)           -- Caso Var
             -> (Nombre -> [b] -> b)    -- Caso Func
             -> Termino -> b            -- Termino
 foldTermino casoVar casoFunc ter =
@@ -50,7 +50,10 @@ foldTermino casoVar casoFunc ter =
 --------------------
 -- Ejercicio 3
 --------------------
-foldFormula ::   (Nombre -> [Termino] -> b) -- Caso Pred 
+-- Implementacion de recursion estructural sobre las formulas.
+-- Aplica la funcion correspondiente dada la estructura del parametro. 
+-- Antes de aplicar la funcion, primero foldea sobre los parametros.
+foldFormula :: (Nombre -> [Termino] -> b)   -- Caso Pred 
             -> (b -> b)                     -- Caso No
             -> (b -> b -> b)                -- Caso Y
             -> (b -> b -> b)                -- Caso O
@@ -96,20 +99,24 @@ recFormula f1 f2 f3 f4 f5 f6 f7 = g
 --------------------
 -- Ejercicio 5
 --------------------
+-- Muestra un termino en formato string. Para eso usa la recursion sobre el fold
+-- especifico para Terminos, pasando a mayusculas las variables y poniendo separadores
+-- de parentesis para las funciones.
 instance Show Termino where
   show = foldTermino mayusculirizar parentizar
 
 mayusculirizar :: Nombre -> Nombre
 mayusculirizar = map toUpper
 
+-- Dada un lista, devulve una funcion que toma una lista de listas y que devuelve
+-- una lista de esos elementos separados por los separadores tomados como parametro.
+join :: [a] -> [[a]] -> [a]
+join separador = foldr (\x res -> if null res then x else x++separador++res) []
 
-join::[a]->[[a]]->[a]
-join separador = foldr (\x res->if null res then x else x++separador++res) []
-
-{- Toma un nombre de función y una lista de argumentos ya convertidos en String,
-   y termina de armar la representación visual. -}
+-- Toma un nombre de función y una lista de argumentos ya convertidos en String,
+-- y termina de armar la representación visual.
 parentizar :: Nombre -> [String] -> String
-parentizar s res = if null res then s else s++"("++(join "," res)++")"
+parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 
 --------------------
 -- Ejercicio 6
@@ -131,10 +138,11 @@ instance Show Formula where
 esReprDeLiteral :: String -> Bool
 esReprDeLiteral s = not (any (\x -> isInfixOf x s) operadoresLogicos)
 
+--------------------
 -- Ejercicio 7
 --------------------
--- Toma una formula y foldea normalmente pero reemplazando las implicaciones con
--- ~A o B.
+-- Toma una formula y foldea como si fuera identidad pero reemplazando las 
+-- implicaciones con ~A o B.
 eliminarImplicaciones :: Formula -> Formula
 eliminarImplicaciones  = foldFormula Pred No Y O (\r1 r2 -> O (No r1) r2) A E
 
