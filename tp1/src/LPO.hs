@@ -193,7 +193,6 @@ obtenerVariables = foldTermino (:[]) (\n r -> concat r)
 --Basta con que las funciones estén bien definidas para su dominio esperado.
 data Interpretacion a = I {fTerm :: (Nombre->[a]->a), fPred :: (Nombre->[a]->Bool)}
 
---Ejemplo para pruebas:
 interpretacionNat::Interpretacion Int
 interpretacionNat = I fTerminos fPredicados where
   fTerminos nombreF | nombreF == "0" = const 0
@@ -257,8 +256,6 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
 -- es natural/sencillo. ¿por qué?
 
--- Ejemplos (agreguen alguno con otra interpretación).
-
 -- vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
 -- True
 
@@ -274,7 +271,7 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- vale interpretacionZ [-1,0,1] (\x -> 0) (Y (E "Y" (Pred "mayor" [Var "Y", Var "X"])) (E "Z" (Pred "menor" [Var "Z", Var "X"])))
 -- True
 
-vale::Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
+vale :: Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 {--
 vale inter dom asig f = foldFormula (\n ts -> fPred inter n ts)
                                     not
