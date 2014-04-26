@@ -53,6 +53,7 @@ testsEsLiteral = test [
        ]
 
 
+-- Tests ejercicio 5 y 6
 testsJoin = test [
 	join "," [] ~=? "",
 	join "," ["x"] ~=? "x",
@@ -65,8 +66,6 @@ testsParentizar = test [
 	parentizar "f" ["x", "y"] ~=? "f(x,y)"
 	]
 
-
--- Tests ejercicio 5 y 6
 testsShowFormula = test [
         show form1   ~=? "¬(¬P(X))",
         show form2   ~=? "P(X)∧Q(X,Y)",
