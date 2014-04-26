@@ -127,14 +127,14 @@ parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 --  show form1
 --  ¬(¬P(X))
 instance Show Formula where
-    show =  foldFormula
-            (\n ts  -> parentizar (mayusculirizar n) (map show ts))
-            (\r     -> if esReprDeLiteral r then  "¬" ++ r else "¬(" ++ r ++ ")")
-            (\r1 r2 -> r1 ++ "∧" ++ r2)
-            (\r1 r2 -> r1 ++ "∨" ++ r2)
-            (\r1 r2 -> r1 ++ "⊃" ++ r2)
-            (\n r   -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
-            (\n r   -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
+    show =  recFormula
+            (\n ts         -> parentizar (mayusculirizar n) (map show ts))
+            (\f r          -> if not (esLiteral f) then  "¬" ++ r else "¬(" ++ r ++ ")")
+            (\f1 f2 r1 r2  -> r1 ++ "∧" ++ r2)
+            (\f1 f2 r1 r2  -> r1 ++ "∨" ++ r2)
+            (\f1 f2 r1 r2  -> r1 ++ "⊃" ++ r2)
+            (\f n r        -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
+            (\f n r        -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
 -- Funcion auxiliar que verifica si en una representacion en string de una formula
 -- hay algun operador logico. Chequeo rapido de si es un literal o no.
