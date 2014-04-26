@@ -320,6 +320,8 @@ vale inter dom asig form = foldFormula (\n ts -> fPred inter n (map (evaluar asi
 vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
 --Caso No: La valuacion de una negacion es la negacion de la valuacion.
 vale inter dom asig (No f)      = not (vale inter dom asig f)
+--Caso O: La valuacion de una disyuncion es la disyuncion de las valuaciones.
+vale inter dom asig (O f1 f2)   = (vale inter dom asig f1) || (vale inter dom asig f2)
 --Caso Y: La valuacion de una conjuncion es la conjuncion de las valuaciones.
 vale inter dom asig (Y f1 f2)   = (vale inter dom asig f1) && (vale inter dom asig f2)
 --Caso Imp: La valuacion de una implicacion es la implicacion de las valuaciones.
