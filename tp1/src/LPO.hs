@@ -26,10 +26,12 @@ operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 -- Ejemplos:
 --  esLiteral  Pred "p" [Func "c" []]      -> True
 --  esLiteral  No (Pred "p" [Func "c" []]) -> True
+--  esLiteral  No (No (No (Pred "p" [Func "c" []]))) -> True
 --  esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ->  False
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _)      = True
 esLiteral (No (Pred _ _)) = True
+esLiteral (No k)          = if esLiteral k then True else False
 esLiteral _               = False
 
 --------------------
@@ -129,17 +131,19 @@ parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 instance Show Formula where
     show =  recFormula
             (\n ts         -> parentizar (mayusculirizar n) (map show ts))
-            (\f r          -> if not (esLiteral f) then  "¬" ++ r else "¬(" ++ r ++ ")")
-            (\f1 f2 r1 r2  -> r1 ++ "∧" ++ r2)
-            (\f1 f2 r1 r2  -> r1 ++ "∨" ++ r2)
-            (\f1 f2 r1 r2  -> r1 ++ "⊃" ++ r2)
+            (\f r          -> if esLiteral f then  "¬" ++ r else "¬(" ++ r ++ ")")
+            (\f1 f2 r1 r2  -> (if not (esLiteral f1) then "(" ++ r1 ++ ")" else r1) 
+                              ++ "∧" 
+                              ++ (if not (esLiteral f2) then "(" ++ r2 ++ ")" else r2))
+            (\f1 f2 r1 r2  -> (if not (esLiteral f1) then "(" ++ r1 ++ ")" else r1) 
+                              ++ "∨" 
+                              ++ (if not (esLiteral f2) then "(" ++ r2 ++ ")" else r2))
+            (\f1 f2 r1 r2  -> (if not (esLiteral f1) then "(" ++ r1 ++ ")" else r1) 
+                              ++ "⊃" 
+                              ++ (if not (esLiteral f2) then "(" ++ r2 ++ ")" else r2))
             (\f n r        -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
             (\f n r        -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
--- Funcion auxiliar que verifica si en una representacion en string de una formula
--- hay algun operador logico. Chequeo rapido de si es un literal o no.
-esReprDeLiteral :: String -> Bool
-esReprDeLiteral s = not (any (\x -> isInfixOf x s) operadoresLogicos)
 
 --------------------
 -- Ejercicio 7
