@@ -197,14 +197,14 @@ negar = recFormula
 --  ["y"]
 
 fv :: Formula -> [Nombre]
-fv = foldFormula (\n ts -> foldl (union) [] (map obtenerVariables ts)) -- Caso Pred: Devuelve todas las variables desduplicadas.
-                 id                                         -- Caso No: Si es una negacion de formula, las mismas variables.
-                 (\r1 r2 -> (union r1 r2))                  -- Caso Y: Devolvemos las desduplicaciones de ambas subformulas.
-                 (\r1 r2 -> (union r1 r2))                  -- Caso O: Idem ^^
-                 (\r1 r2 -> (union r1 r2))                  -- Caso Imp: Idem ^^
-                 (\n  r  -> filter (/=n) r)                  -- Caso A: Devolvemos las variables de las subformulas que sean
-                                                             --     distintas a la ligada variable ligada aca.
-                 (\n r   -> filter (/=n) r)                  -- Caso E: Idem ^^
+fv = foldFormula (\n ts -> foldl union [] (map obtenerVariables ts)) -- Caso Pred: Devuelve todas las variables desduplicadas.
+                 id                                                  -- Caso No: Si es una negacion de formula, las mismas variables.
+                 union                                               -- Caso Y: Devolvemos las desduplicaciones de ambas subformulas.
+                 union                                               -- Caso O: Idem ^^
+                 union                                               -- Caso Imp: Idem ^^
+                 (\n r   -> filter (/=n) r)                          -- Caso A: Devolvemos las variables de las subformulas que sean
+                                                                     --     distintas a la ligada variable ligada aca.
+                 (\n r   -> filter (/=n) r)                          -- Caso E: Idem ^^
 
 -- Proyeccion de los nombres de las variables de un termino en una lista.
 obtenerVariables :: Termino -> [Nombre]
