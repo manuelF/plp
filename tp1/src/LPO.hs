@@ -299,23 +299,18 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- True
 
 vale :: Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
-{--
-vale inter dom asig f = foldFormula (\n ts -> fPred inter n ts)
-                                    not
-                                    (&&)
-                                    (||)
-                                    (-->)
-                                    "Booom fold"
-vale inter dom asig form = foldFormula (\n ts -> fPred inter n (map (evaluar asig (fTerm inter)) ts))
-                                    (not)
-                                    (&&)
-                                    (||)
-                                    (-->)
-                                    --
-                                    (\n f -> and [vale (inter dom (actualizarAsignacion n v asig) f) | v <- dom])
-                                    (\n f -> or  [vale (inter dom (actualizarAsignacion n v asig) f) | v <- dom])
+vale inter dom asig form = recFormula (\n ts -> fPred inter n (map (evaluar asig (fTerm inter)) ts))
+                                    (\f1 a -> not a)
+                                    (\f1 f2 a b -> a && b)
+                                    (\f1 f2 a b -> a || b)
+                                    (\f1 f2 a b -> a --> b)
+                                    (\r n f ->  and (map ((((.).(.)) flip vale) inter dom r) [actualizarAsignacion n v asig | v <- dom]))
+                                    (\r n f ->  or  (map ((((.).(.)) flip vale) inter dom r) [actualizarAsignacion n v asig | v <- dom]))
+                                    --(\n f -> and [vale (inter dom (actualizarAsignacion n v asig) f) | v <- dom])
+                                    --(\n f -> or  [vale (inter dom (actualizarAsignacion n v asig) f) | v <- dom])
                                     form
---}
+{--
+vale :: Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 --Caso Pred: La valuacion de un predicado es la valuacion de sus terminos dadas las asignaciones.
 vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
 --Caso No: La valuacion de una negacion es la negacion de la valuacion.
@@ -332,6 +327,7 @@ vale inter dom asig (A n f)     = and [vale inter dom (actualizarAsignacion n v 
 --Caso E: La valuacion del cuantificador existencial es la disyuncion de todas las valuaciones
 --de la formula con la variable ligada.
 vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
+--}
 -- Auxiliar: Operador implicacion
 (-->) :: Bool -> Bool -> Bool
 (-->) x y = not x || y
