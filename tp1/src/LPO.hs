@@ -277,11 +277,6 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- explícita, pero aclaren por qué no encaja bien en fold ni rec.
 -- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
 -- es natural/sencillo. ¿por qué?
---  *Para hacerla con fold, en la funcion que se le pasa en el lugar
---  del A y E, habria que hacer flip de los ultimos dos parametros. Esto
---  permitiria currificarla y dejar que la asignacion sea el ultimo en lugar
---  del anteultimo parametro. Esto permitiria poder pasar la como parametro,
---  y ya que la formula estaria fija, entonces  
 
 -- vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
 -- True
@@ -298,18 +293,7 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- vale interpretacionZ [-1,0,1] (\x -> 0) (Y (E "Y" (Pred "mayor" [Var "Y", Var "X"])) (E "Z" (Pred "menor" [Var "Z", Var "X"])))
 -- True
 
-vale :: Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
-vale inter dom asig form = recFormula (\n ts -> fPred inter n (map (evaluar asig (fTerm inter)) ts))
-                                    (\f1 a -> not a)
-                                    (\f1 f2 a b -> a && b)
-                                    (\f1 f2 a b -> a || b)
-                                    (\f1 f2 a b -> a --> b)
-                                    (\r n f ->  and (map ((((.).(.)) flip vale) inter dom r) [actualizarAsignacion n v asig | v <- dom]))
-                                    (\r n f ->  or  (map ((((.).(.)) flip vale) inter dom r) [actualizarAsignacion n v asig | v <- dom]))
-                                    --(\n f -> and [vale (inter dom (actualizarAsignacion n v asig) f) | v <- dom])
-                                    --(\n f -> or  [vale (inter dom (actualizarAsignacion n v asig) f) | v <- dom])
-                                    form
-{--
+--
 vale :: Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 --Caso Pred: La valuacion de un predicado es la valuacion de sus terminos dadas las asignaciones.
 vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
@@ -327,7 +311,7 @@ vale inter dom asig (A n f)     = and [vale inter dom (actualizarAsignacion n v 
 --Caso E: La valuacion del cuantificador existencial es la disyuncion de todas las valuaciones
 --de la formula con la variable ligada.
 vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
---}
+
 -- Auxiliar: Operador implicacion
 (-->) :: Bool -> Bool -> Bool
 (-->) x y = not x || y
