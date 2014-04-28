@@ -41,7 +41,8 @@ allTests = test [
         "aFNN" ~: testsAFNN,
         "FV" ~: testsFv,
         "evaluar" ~: testsEvaluar,
-        "actualizarAsignacion" ~: testsActualizarAsignacion
+        "actualizarAsignacion" ~: testsActualizarAsignacion,
+        "valer" ~: testVale
 	]
 
 -- Tests ejercicio 1
@@ -378,16 +379,23 @@ testsFv = test [
          fv form26 ~=? [],   --form26 = ∀X.(¬(¬P(X)))
          fv form27 ~=? ["y"] --form27 = ∀X.(P(X)∧Q(X,Y))
          ]
--- Tests ejercicio 11
-testsActualizarAsignacion = test [
-        (actualizarAsignacion "X" 99 asignacion1) "X" ~=? 99,
-        (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1
-        ]
-
--- Tests ejercicio 12
+-- Tests ejercicio 10
 testsEvaluar = test [
         evaluar asignacion1 (fTerm interpretacionNat)  term1 ~=? 2,
         evaluar asignacion2 (fTerm interpretacionNat)  term1 ~=? 21,
         evaluar asignacion1 (fTerm interpretacionZ)  term2 ~=? -4
         ]
 
+-- Tests ejercicio 11
+testsActualizarAsignacion = test [
+        (actualizarAsignacion "X" 99 asignacion1) "X" ~=? 99,
+        (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1
+        ]
+
+testVale = test [
+        vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"]) ~=? True,
+        vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "X",Func "suc" [Var "X"]]) ~=? False,
+        vale interpretacionNat [0,1] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"])) ~=? True,
+        vale interpretacionNat [0] (\x -> 0) (E "Y" (Pred "mayor" [Var "Y", Var "X"])) ~=? False,
+        vale interpretacionZ [-1,0,1] (\x -> 0) (Y (E "Y" (Pred "mayor" [Var "Y", Var "X"])) (E "Z" (Pred "menor" [Var "Z", Var "X"]))) ~=? True
+        ] 
