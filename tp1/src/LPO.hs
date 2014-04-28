@@ -30,8 +30,7 @@ operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 --  esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ->  False
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _)      = True
-esLiteral (No (Pred _ _)) = True
-esLiteral (No k)          = if esLiteral k then True else False
+esLiteral (No p)          = esLiteral p
 esLiteral _               = False
 
 --------------------
