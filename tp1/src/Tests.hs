@@ -35,14 +35,14 @@ expected ~~ actual = (sort expected) == (sort actual)
 allTests = test [ 
 	"join" ~: testsJoin,
 	"parentizar" ~: testsParentizar,
-        "esLiteral" ~: testsEsLiteral,
-        "Formula.show" ~: testsShowFormula,
-        "eliminarImplicaciones" ~: testsEliminarImplicaciones,
-        "aFNN" ~: testsAFNN,
-        "FV" ~: testsFv,
-        "evaluar" ~: testsEvaluar,
-        "actualizarAsignacion" ~: testsActualizarAsignacion,
-        "valer" ~: testVale
+  "esLiteral" ~: testsEsLiteral,
+  "Formula.show" ~: testsShowFormula,
+  "eliminarImplicaciones" ~: testsEliminarImplicaciones,
+  "aFNN" ~: testsAFNN,
+  "FV" ~: testsFv,
+  "evaluar" ~: testsEvaluar,
+  "actualizarAsignacion" ~: testsActualizarAsignacion,
+  "valer" ~: testVale
 	]
 
 -- Tests ejercicio 1
@@ -50,7 +50,8 @@ testsEsLiteral = test [
        esLiteral form2 ~=? False,
        esLiteral form3 ~=? False,
        esLiteral p ~=? True,
-       esLiteral noQ ~=? True
+       esLiteral noQ ~=? True,
+       esLiteral (No noQ) ~=? True
        ]
 
 
@@ -392,6 +393,7 @@ testsActualizarAsignacion = test [
         (actualizarAsignacion "X" 99 asignacion1) "Y" ~=? 1
         ]
 
+-- Tests ejercicio 12
 testVale = test [
         vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"]) ~=? True,
         vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "X",Func "suc" [Var "X"]]) ~=? False,
