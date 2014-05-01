@@ -253,7 +253,7 @@ type Asignacion a = Nombre -> a
 --------------------
 -- Devuelve un valor para una formula dada una asignacion de sus variables.
 -- Ejemplo: evaluar asignacion1 (fTerm interpretacionNat) $ Func "suma" [Func "suc" [Var "X"], Var "Y"]
-evaluar::Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
+evaluar :: Asignacion a -> (Nombre -> [a] -> a) -> Termino -> a
 evaluar = foldTermino
 
 --------------------
@@ -277,6 +277,20 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- Se puede hacer con fold cambiando el orden de los parámetros (flip), pero no
 -- es natural/sencillo. ¿por qué?
 
+-- - La solucion de hacerlo con el fold consiste en hacer el fold sobre la formula
+-- pero parametrizando la interpretacion, dominio y la asignacion. De esta manera
+-- se construye con el fold el arbol de funciones pero sin evaluar, y solamente toman
+-- valores cuando se las invocan con los restantes parametros. De esta forma, el fold
+-- se usa para construir las funciones que luego se van a invocar.
+-- -  Se requiere el flip de los parametros para que primero aparezca la formula, lo
+-- que permite currificar el vale como (foldFormula (...) formula) interpretacion dominio asignacion.
+-- Esto tiene sentido ya que la estructura que devuelve foldFormula solamente depende 
+-- de la estructura de la formula parametro, y no de las evaluaciones.
+--  - La recursion explicita en este caso mezcla la estructura y la evaluacion. Es mucho
+--  mas facil de entender pero se pueden concebir casos donde sea mas eficiente construir una unica
+--  vez la estrucutra de evaluacion de la formula y probar varias asignaciones (util por ejemplo
+--  para casos de SAT solving tal vez) en vez de tener que desarmarla una y otra vez para evaluarla.
+
 -- vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
 -- True
 
@@ -292,7 +306,6 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- vale interpretacionZ [-1,0,1] (\x -> 0) (Y (E "Y" (Pred "mayor" [Var "Y", Var "X"])) (E "Z" (Pred "menor" [Var "Z", Var "X"])))
 -- True
 
---
 vale :: Eq a => Interpretacion a -> [a] -> Asignacion a -> Formula -> Bool
 --Caso Pred: La valuacion de un predicado es la valuacion de sus terminos dadas las asignaciones.
 vale inter dom asig (Pred n ts) = fPred inter n (map (evaluar asig (fTerm inter)) ts)
@@ -310,6 +323,7 @@ vale inter dom asig (A n f)     = and [vale inter dom (actualizarAsignacion n v 
 --Caso E: La valuacion del cuantificador existencial es la disyuncion de todas las valuaciones
 --de la formula con la variable ligada.
 vale inter dom asig (E n f)     = or  [vale inter dom (actualizarAsignacion n v asig) f | v <- dom]
+
 
 -- Auxiliar: Operador implicacion
 (-->) :: Bool -> Bool -> Bool
