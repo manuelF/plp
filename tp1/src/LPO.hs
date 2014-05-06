@@ -32,7 +32,7 @@ esLiteral :: Formula -> Bool
 esLiteral (Pred _ _)      = True
 esLiteral (No p)          = esLiteral p
 esLiteral _               = False
-
+MAAAAAAAAAAAAAAAAAAAAAAAAL
 --------------------
 -- Ejercicio 2
 --------------------
