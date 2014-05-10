@@ -26,7 +26,7 @@ operadoresLogicos = ["¬","∧","∨","⊃","∀","∃"]
 -- Ejemplos:
 --  esLiteral  Pred "p" [Func "c" []]      -> True
 --  esLiteral  No (Pred "p" [Func "c" []]) -> True
---  esLiteral  No (No (No (Pred "p" [Func "c" []]))) -> True
+--  esLiteral  No (No (No (Pred "p" [Func "c" []]))) -> False
 --  esLiteral  Imp  (Pred "P" [Func "c" []])  (Pred "Q" [Func "d" []]) ->  False
 esLiteral :: Formula -> Bool
 esLiteral (Pred _ _)      = True
@@ -130,16 +130,16 @@ parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 instance Show Formula where
     show =  recFormula
             (\n ts         -> parentizar (mayusculirizar n) (map show ts))
-            (\f r          -> if esLiteral f then  "¬" ++ r else "¬(" ++ r ++ ")")
-            (\f1 f2 r1 r2  -> (if not (esLiteral f1) then "(" ++ r1 ++ ")" else r1) 
+            (\f r          -> "¬" ++ (if esLiteral (No f) then  r else "(" ++ r ++ ")"))
+            (\f1 f2 r1 r2  -> (if esLiteral f1 then r1 else "(" ++ r1 ++ ")") 
                               ++ "∧" 
-                              ++ (if not (esLiteral f2) then "(" ++ r2 ++ ")" else r2))
-            (\f1 f2 r1 r2  -> (if not (esLiteral f1) then "(" ++ r1 ++ ")" else r1) 
+                              ++ (if esLiteral f2 then r2 else "(" ++ r2 ++ ")")) 
+            (\f1 f2 r1 r2  -> (if esLiteral f1 then r1 else "(" ++ r1 ++ ")") 
                               ++ "∨" 
-                              ++ (if not (esLiteral f2) then "(" ++ r2 ++ ")" else r2))
-            (\f1 f2 r1 r2  -> (if not (esLiteral f1) then "(" ++ r1 ++ ")" else r1) 
+                              ++ (if esLiteral f2 then r2 else "(" ++ r2 ++ ")")) 
+            (\f1 f2 r1 r2  -> (if esLiteral f1 then r1 else "(" ++ r1 ++ ")") 
                               ++ "⊃" 
-                              ++ (if not (esLiteral f2) then "(" ++ r2 ++ ")" else r2))
+                              ++ (if esLiteral f2 then r2 else "(" ++ r2 ++ ")"))
             (\f n r        -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
             (\f n r        -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
