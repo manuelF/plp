@@ -11,7 +11,7 @@ noQ = (No q)                      -- ¬Q(X,Y)
 noR = (No r)                      -- ¬R(Z)
 
 -- And operator
-form1   = No (noP)                 -- ¬¬P(X)
+form1   = No (noP)                 -- ¬(¬P(X))
 form2   = Y p q                    -- P(X)∧Q(X,Y)
 form3   = Y noP q                  -- ¬P(X)∧Q(X,Y)
 form4   = Y p noQ                  -- P(X)∧¬Q(X,Y)
