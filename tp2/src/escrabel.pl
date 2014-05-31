@@ -1,3 +1,5 @@
+%/* vim: set filetype=prolog : */  
+
 %Scrabble solitario.
 %Diferencias con respecto al juego Scrabble original: 
 %1. Se juega de a uno, buscando obtener el mayor puntaje posible.
@@ -44,8 +46,8 @@ fichas(FS) :- replicar(12,a,A), replicar(2,b,B), replicar(4,c,C), replicar(5,d,D
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Definición de matrices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 %Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba a la izquierda.
-% matriz(+CantFilas, +CantColumnas, ?Matriz).
-
+%matriz(+CantFilas, +CantColumnas, ?Matriz).
+matriz(F, C, M) :- replicar(F,Filin,M), replicar(C,X,Filin), var(X).
 
 
 %Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
@@ -59,6 +61,8 @@ enRango([F|FS],(X,Y)) :- 0 =< X, 0 =< Y, length(F, L1), X < L1, length(FS,L2), Y
 
 %Saber si una posici ́n est ́ definida dentro del tablero, y determinar la siguiente posición, en la dirección dada (vertical u horizontal)
 % siguiente(?Direccion, +Origen, ?Destino)
+siguiente(vertical, (A,B), P) :- I is B+1, P = (A,I).
+siguiente(horizontal, (A,B), P) :- I is A+1, P = (I,B).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Proyectores del tablero %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -72,7 +76,6 @@ inicialDe(t(_,I,_,_,_,_), I).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para contar fichas %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % fichasUtilizadas(+Matriz,-Fichas) - Es importante contar sólo las celdas que no sean variables.
-
 
 % fichasQueQuedan(+Matriz, -Fichas)
 
