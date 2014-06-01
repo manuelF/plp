@@ -47,8 +47,8 @@ fichas(FS) :- replicar(12,a,A), replicar(2,b,B), replicar(4,c,C), replicar(5,d,D
 
 %Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba a la izquierda.
 %matriz(+CantFilas, +CantColumnas, ?Matriz).
-matriz(F, C, M) :- replicar(F,Filin,M), replicar(C,X,Filin), var(X).
-
+matriz(F,_, []) :- F =< 0, !.
+matriz(F,C, [L|LS]) :- length(C, L), matriz(F-1,C,LS).
 
 %Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
@@ -77,8 +77,17 @@ inicialDe(t(_,I,_,_,_,_), I).
 
 % fichasUtilizadas(+Matriz,-Fichas) - Es importante contar sólo las celdas que no sean variables.
 
-% fichasQueQuedan(+Matriz, -Fichas)
+soloNoVars([],V) :- V = [].
+soloNoVars([L|LS], V) :- ground(L), soloNoVars(LS,Cola), append([L],Cola,V).
+soloNoVars([L|LS], V) :- var(L), soloNoVars(LS, Cola), V = Cola.
 
+fichasAuxiliar([], Fichas) :- Fichas = [].
+fichasAuxiliar([L|LS], Fichas) :- fichasAuxiliar(L,Lsub), soloNoVars(Lsub, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
+
+fichasUtilizadas(M, Fichas) :- M = matriz(_,_,L), fichasAuxiliar(L,Fichas).
+
+
+% fichasQueQuedan(+Matriz, -Fichas)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para buscar una letra (con sutiles diferencias) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
