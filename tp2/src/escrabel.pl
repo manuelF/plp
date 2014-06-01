@@ -48,7 +48,7 @@ fichas(FS) :- replicar(12,a,A), replicar(2,b,B), replicar(4,c,C), replicar(5,d,D
 %Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba a la izquierda.
 %matriz(+CantFilas, +CantColumnas, ?Matriz).
 matriz(F,_, []) :- F =< 0, !.
-matriz(F,C, [L|LS]) :- length(C, L), matriz(F-1,C,LS).
+matriz(F,C, [L|LS]) :- length(L, C), matriz(F-1,C,LS).
 
 %Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
@@ -85,7 +85,6 @@ fichasAuxiliar([], Fichas) :- Fichas = [].
 fichasAuxiliar([L|LS], Fichas) :- fichasAuxiliar(L,Lsub), soloNoVars(Lsub, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
 
 fichasUtilizadas(M, Fichas) :- M = matriz(_,_,L), fichasAuxiliar(L,Fichas).
-
 
 % fichasQueQuedan(+Matriz, -Fichas)
 
