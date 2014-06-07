@@ -82,11 +82,19 @@ soloNoVars([L|LS], V) :- ground(L), soloNoVars(LS,Cola), append([L],Cola,V).
 soloNoVars([L|LS], V) :- var(L), soloNoVars(LS, Cola), V = Cola.
 
 fichasAuxiliar([], Fichas) :- Fichas = [].
-fichasAuxiliar([L|LS], Fichas) :- fichasAuxiliar(L,Lsub), soloNoVars(Lsub, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
+fichasAuxiliar([L|LS], Fichas) :- is_list(L), fichasAuxiliar(L,Lsub), soloNoVars(Lsub, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
+fichasAuxiliar([L|LS], Fichas) :- soloNoVars(L, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
 
-fichasUtilizadas(M, Fichas) :- M = matriz(_,_,L), fichasAuxiliar(L,Fichas).
+fichasUtilizadas(matriz(_,_,L), Fichas) :- fichasAuxiliar(L,Fichas).
 
 % fichasQueQuedan(+Matriz, -Fichas)
+restarListas([],L2,R) :- R = L2.
+restarListas([L|LS], L2, R) :- select(L, L2, Restada), restarListas(LS, Restada, R), !.
+restarListas([_|LS], L2, R) :- restarListas(LS, L2, R).
+
+fichasQueQuedan([], F) :- fichas(F).
+fichasQueQuedan([L|LS], F) :- soloNoVars(L, Grounded), restarListas(Grounded,Recu,F), fichasQueQuedan(LS, Recu).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para buscar una letra (con sutiles diferencias) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -94,6 +102,8 @@ fichasUtilizadas(M, Fichas) :- M = matriz(_,_,L), fichasAuxiliar(L,Fichas).
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion ya está la letra o un *. No unifica con variables.
+buscarLetra(L, matriz(_,_,[]), P ):- !.
+buscarLetra(L, matriz(F,C,[L|LS], P)) :- P is (0,0).
 
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes) - La matriz puede estar parcialmente instanciada.
 %El * puede reemplazar a cualquier letra. Puede ubicarla donde había una variable.
