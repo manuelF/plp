@@ -103,9 +103,9 @@ letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 % buscarLetraAux(+Letra,+Matriz,+Fila, ?Posicion)
 %
 %   Problemas: Devuelve la posicion (Z,W), con (Z,W) variables libres en vez de posiciones grounded.
-%              No reconoce el * como caracter donde puede ir una letra.
 buscarLetraAux(_, [], _, _) :- !.
 buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- X is Fila, (nth0(Y,L, Letra2), ground(Letra2), Letra2=Letra), buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
+buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- X is Fila, (nth0(Y,L, Letra2), ground(Letra2), Letra2=*), buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
 buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
 %
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion ya está la letra o un *. No unifica con variables.
