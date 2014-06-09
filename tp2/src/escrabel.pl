@@ -81,10 +81,8 @@ soloNoVars([],V) :- V = [].
 soloNoVars([L|LS], V) :- ground(L), soloNoVars(LS,Cola), append([L],Cola,V).
 soloNoVars([L|LS], V) :- var(L), soloNoVars(LS, Cola), V = Cola.
 
-fichasAuxiliar([], Fichas) :- Fichas = [].
-fichasAuxiliar([L|LS], Fichas) :- soloNoVars(L, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
-
-fichasUtilizadas(L, Fichas) :- fichasAuxiliar(L,Fichas).
+fichasUtilizadas([], Fichas) :- Fichas = [].
+fichasUtilizadas([L|LS], Fichas) :- soloNoVars(L, Estas), fichasUtilizadas(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
 
 
 % fichasQueQuedan(+Matriz, -Fichas)
