@@ -29,6 +29,7 @@ puntaje(L, 10) :- member(L, [z]).
 
 letra(L) :- puntaje(L,_).
 
+
 % Tiene éxito si XS es una lista con X repetido N veces. Auxiliar para definir
 % la lista de fichas brevemente. Eventualmente puede tener otros usos.
 % replicar(+N, ?X, ?XS)

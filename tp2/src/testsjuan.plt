@@ -1,3 +1,4 @@
+
 equals(L1, L2) :- msort(L1, L1ord), msort(L2, L2ord), L1ord = L2ord.
 
 :- begin_tests(escrabel).
