@@ -101,13 +101,15 @@ fichasQueQuedan([L|LS], F) :- soloNoVars(L, Grounded), restarListas(Grounded,Rec
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
 % buscarLetraAux(+Letra,+Matriz,+Fila, ?Posicion)
-buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- length(L,LONGITUD), K<LONGITUD, X=Fila, Y=K.%,% nth0(K,L, Letra2), ground(Letra2), Letra=Letra2. 
-%buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- length(L,LONGITUD), K<LONGITUD, X=Fila, Y=K, nth0(K,L, Letra), ground(Letra), Letra==*. 
+%
+%   Problemas: Devuelve la posicion (Z,W), con (Z,W) variables libres en vez de posiciones grounded.
+%              No reconoce el * como caracter donde puede ir una letra.
+buscarLetraAux(_, [], _, _) :- !.
+buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- X is Fila, (nth0(Y,L, Letra2), ground(Letra2), Letra2=Letra), buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
+buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
 %
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion ya está la letra o un *. No unifica con variables.
-buscarLetra(_, [], _ ):- !.
-buscarLetra(Letra, M, P ):- buscarLetraAux(Letra, M, 0, P). % Aca tengo que devolver todas las Posiciones tal que Letra aparezca ahi. 
-%buscarLetra(Letra, matriz(F,C,[L|LS], P)) :- P is (0,0).
+buscarLetra(Letra, [L|LS], P ):- buscarLetraAux(Letra, [L|LS], 0, P).
 
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes) - La matriz puede estar parcialmente instanciada.
 %El * puede reemplazar a cualquier letra. Puede ubicarla donde había una variable.
