@@ -1,6 +1,4 @@
 
-equals(L1, L2) :- msort(L1, L1ord), msort(L2, L2ord), L1ord = L2ord.
-
 :- begin_tests(escrabel).
 
 test(siguiente) :-
@@ -16,5 +14,8 @@ test(fichasUtilizadas) :-
 test(fichasQueQuedan) :-
     fichasQueQuedan([[X1,X2], [X3,X4]], L), fichas(F), equals(L, F).
 	       
+test(buscarLetra) :-
+    buscarLetra(a, [[X1,a], [b,X2]], (1,0)),
+    buscarLetra(a, [[X1,a], [b,X2]], P), P = (1,0).
 
 :- end_tests(escrabel).
