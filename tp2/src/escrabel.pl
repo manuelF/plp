@@ -86,6 +86,7 @@ fichasAuxiliar([L|LS], Fichas) :- soloNoVars(L, Estas), fichasAuxiliar(LS, Resul
 
 fichasUtilizadas(L, Fichas) :- fichasAuxiliar(L,Fichas).
 
+
 % fichasQueQuedan(+Matriz, -Fichas)
 restarListas([],L2,R) :- R = L2.
 restarListas([L|LS], L2, R) :- select(L, L2, Restada), restarListas(LS, Restada, R), !.
@@ -101,11 +102,9 @@ fichasQueQuedan([L|LS], F) :- soloNoVars(L, Grounded), restarListas(Grounded,Rec
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
 % buscarLetraAux(+Letra,+Matriz,+Fila, ?Posicion)
-%
-%   Problemas: Devuelve la posicion (Z,W), con (Z,W) variables libres en vez de posiciones grounded.
-buscarLetraAux(_, [], _, _) :- !.
+buscarLetraAux(_, [], _, (X,Y)) :- ground(X), ground(Y).
 buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- X is Fila, (nth0(Y,L, Letra2), ground(Letra2), Letra2=Letra), buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
-buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- X is Fila, (nth0(Y,L, Letra2), ground(Letra2), Letra2=*), buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
+buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- X is Fila, (nth0(Y,L, Letra2), ground(Letra2), Letra2='*'), buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
 buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- buscarLetraAux(Letra, LS, Fila+1, (X,Y)).
 %
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion ya está la letra o un *. No unifica con variables.
