@@ -82,10 +82,9 @@ soloNoVars([L|LS], V) :- ground(L), soloNoVars(LS,Cola), append([L],Cola,V).
 soloNoVars([L|LS], V) :- var(L), soloNoVars(LS, Cola), V = Cola.
 
 fichasAuxiliar([], Fichas) :- Fichas = [].
-fichasAuxiliar([L|LS], Fichas) :- is_list(L), fichasAuxiliar(L,Lsub), soloNoVars(Lsub, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
 fichasAuxiliar([L|LS], Fichas) :- soloNoVars(L, Estas), fichasAuxiliar(LS, ResultadoCola), append(Estas,ResultadoCola,Fichas).
 
-fichasUtilizadas(matriz(_,_,L), Fichas) :- fichasAuxiliar(L,Fichas).
+fichasUtilizadas(L, Fichas) :- fichasAuxiliar(L,Fichas).
 
 % fichasQueQuedan(+Matriz, -Fichas)
 restarListas([],L2,R) :- R = L2.
@@ -101,9 +100,14 @@ fichasQueQuedan([L|LS], F) :- soloNoVars(L, Grounded), restarListas(Grounded,Rec
 % letraEnPosicion(+Matriz,?Posicion,?Letra) - Letra es lo que hay en Posicion (X,Y), ya sea variable, * o una letra propiamente dicha.
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
+% buscarLetraAux(+Letra,+Matriz,+Fila, ?Posicion)
+buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- length(L,LONGITUD), K<LONGITUD, X=Fila, Y=K.%,% nth0(K,L, Letra2), ground(Letra2), Letra=Letra2. 
+%buscarLetraAux(Letra, [L|LS], Fila, (X,Y)) :- length(L,LONGITUD), K<LONGITUD, X=Fila, Y=K, nth0(K,L, Letra), ground(Letra), Letra==*. 
+%
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion ya está la letra o un *. No unifica con variables.
-buscarLetra(L, matriz(_,_,[]), P ):- !.
-buscarLetra(L, matriz(F,C,[L|LS], P)) :- P is (0,0).
+buscarLetra(_, [], _ ):- !.
+buscarLetra(Letra, M, P ):- buscarLetraAux(Letra, M, 0, P). % Aca tengo que devolver todas las Posiciones tal que Letra aparezca ahi. 
+%buscarLetra(Letra, matriz(F,C,[L|LS], P)) :- P is (0,0).
 
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes) - La matriz puede estar parcialmente instanciada.
 %El * puede reemplazar a cualquier letra. Puede ubicarla donde había una variable.
@@ -112,7 +116,6 @@ buscarLetra(L, matriz(F,C,[L|LS], P)) :- P is (0,0).
 % Ejemplo: tablero2(T), matrizDe(T,M), ubicarPalabra([s,i], M, I, horizontal) -> se puede ubicar 'si' horizontalmente de 4 formas distintas
 % M = [[s, i, -], [-, -, -], [-, -, -]] ; M = [[s, *, -], [-, -, -], [-, -, -]] ; M = [[*, i, -], [-, -, -], [-, -, -]] ; M = [[*, *, -], [-, -, -], [-, -, -]] ; 
 % donde los '-' representan variables, e I es siempre (0,0), ya que es la primera palabra de este tablero.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para buscar una palabra (con sutiles diferencias) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
