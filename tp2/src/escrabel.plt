@@ -38,7 +38,7 @@ tablero4(t(M,(2,2),[(1,1),(1,3),(3,1),(3,3)],[(0,0),(2,2),(4,4)],
 
 tablero5(t(M,(0,0),[(1,2),(2,1)],[(0,0)],[(1,1)],[(2,2)])) :-
 	     M = [[c,_,_],[_,_,_],[_,_,_]].
-	     
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -55,14 +55,14 @@ test(siguiente) :-
     siguiente(horizontal, (0,0), P2), P2 = (1,0).
 
 test(fichasUtilizadas) :-
-    fichasUtilizadas([[_,_], [_,_]], L1), L1 = [], 
+    fichasUtilizadas([[_,_], [_,_]], L1), L1 = [],
     fichasUtilizadas([[_,a], [b,_]], L2), equals(L2, [a,b]),
     fichasUtilizadas([[a,a], [b,_]], L3), equals(L3, [a,b,a]).
 
 test(fichasQueQuedan) :-
     fichasQueQuedan([[_,_], [_,_]], L1), fichas(F), equals(L1, F),
     fichasQueQuedan([[a,b], [a,c]], L2), subtract_once(F, [a,b,a,c], L3), equals(L2, L3).
-	       
+
 test(buscarLetra) :-
     buscarLetra(a, [[X1,a], [b,X2]], (1,0)),
     buscarLetra(a, [[X1,a], [b,X2]], P), P = (1,0).
@@ -70,8 +70,11 @@ test(buscarLetra) :-
 test(ubicarLetra) :-
     ubicarLetra(a, [[b,b],[b,_]], Pos, [a,b,c], [b,c]), Pos == (1,1).
 
-%test(ubicarPalabra) :-
-
+test(ubicarPalabra) :-
+    M = [[Q,W,E],[T,Y,U],[Z,X,C]],
+    copiaMatriz(M,MCopy),
+    ubicarPalabra([a,b,c], M, (0,0), horizontal),
+    \+ ubicarPalabra([a,b,c,d], MCopy, (0,0), horizontal), !.
 
 test(buscarPalabra) :-
     buscarPalabra([p,e], [[p,_],[e,_]], [(0,0),(0,1)], vertical),
