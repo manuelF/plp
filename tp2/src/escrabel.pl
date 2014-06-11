@@ -1,7 +1,7 @@
-%/* vim: set filetype=prolog : */  
+%/* vim: set filetype=prolog : */
 
 % Scrabble solitario.
-% Diferencias con respecto al juego Scrabble original: 
+% Diferencias con respecto al juego Scrabble original:
 % 1. Se juega de a uno, buscando obtener el mayor puntaje posible.
 % 2. Se juega con todas las fichas que quedan, en lugar de ir sacando de a 7.
 % 3. El mismo premio puede utilizarse dos veces, si el casillero se utiliza
@@ -41,7 +41,7 @@ puntaje(L, 10) :- member(L, [z]).
 
 letra(L) :- puntaje(L,_).
 
-%Tiene éxito si XS es una lista con X repetido N veces. Auxiliar para definir 
+%Tiene éxito si XS es una lista con X repetido N veces. Auxiliar para definir
 %la lista de fichas brevemente. Eventualmente puede tener otros usos.
 % replicar(+N, ?X, ?XS)
 replicar(0, _, []).
@@ -88,7 +88,7 @@ enRango([F | FS], (X,Y)) :-
     length(FS, L2), Y =< L2.
 
 
-%Saber si una posicion esta definida dentro del tablero, y determinar la 
+%Saber si una posicion esta definida dentro del tablero, y determinar la
 %siguiente posicion, en la dirección dada (vertical u horizontal)
 % siguiente(?Direccion, +Origen, ?Destino)
 siguiente(vertical, (A,B), P) :- I is B+1, P = (A,I).
@@ -126,19 +126,19 @@ fichasQueQuedan(M, F) :-
 
 %%%%%%%%%% Predicados para buscar una letra (con sutiles diferencias) %%%%%%%%%
 
-% letraEnPosicion(+Matriz,?Posicion,?Letra) - Letra es lo que hay en Posicion 
+% letraEnPosicion(+Matriz,?Posicion,?Letra) - Letra es lo que hay en Posicion
 % (X,Y), ya sea variable, * o una letra propiamente dicha.
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
-% buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion 
+% buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion
 % ya está la letra o un *. No unifica con variables.
 buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = X.
 buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
 
 % La matriz puede estar parcialmente instanciada.
-% ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes) 
+% ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes)
 ubicarLetra(X, M, P, LD, FR) :-
-    delete_one(X, LD, FR), !, 
+    delete_one(X, LD, FR), !,
     letraEnPosicion(M, P, X).
 
 % La matriz puede estar parcialmente instanciada.
@@ -148,12 +148,12 @@ ubicarLetra(X, M, P, LD, FR) :-
 % Las posiciones donde ya estaba la letra son soluciones válidas y no gastan
 % una ficha.
 
-% Ejemplo: tablero2(T), matrizDe(T,M), ubicarPalabra([s,i], M, I, horizontal) 
+% Ejemplo: tablero2(T), matrizDe(T,M), ubicarPalabra([s,i], M, I, horizontal)
 % -> se puede ubicar 'si' horizontalmente de 4 formas distintas
 % M = [[s, i, -], [-, -, -], [-, -, -]] ;
 % M = [[s, *, -], [-, -, -], [-, -, -]] ;
 % M = [[*, i, -], [-, -, -], [-, -, -]] ;
-% M = [[*, *, -], [-, -, -], [-, -, -]] ; 
+% M = [[*, *, -], [-, -, -], [-, -, -]] ;
 % donde los '-' representan variables, e I es siempre (0,0), ya que es la
 % primera palabra de este tablero.
 
@@ -170,7 +170,7 @@ ubicarPalabraConFichas([H|T], M, I, D, FD) :-
     member(H, FD),
     ubicarLetra(H, M, I, FD, FR),
     siguiente(D, I, S),
-    ubicarPalabraConFichas(T, M, S, D, FR). 
+    ubicarPalabraConFichas(T, M, S, D, FR).
 
 
 % ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion)
@@ -178,7 +178,7 @@ ubicarPalabraConFichas([H|T], M, I, D, FD) :-
 % La matriz puede estar parcialmente instanciada.
 ubicarPalabra(P, M, I, D) :-
     fichasQueQuedan(M, FD),
-    ubicarPalabraConFichas(P, M, I, D, FD). 
+    ubicarPalabraConFichas(P, M, I, D, FD).
 
 
 % buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
@@ -196,7 +196,7 @@ direccion_ok([_|[]], horizontal).
 direccion_ok([C1,C2|CS], D) :-
     siguiente(D, C1, C2),
     direccion_ok([C2|CS], D), !.
- 
+
 
 % celdasPalabra(+Palabra,+Matriz,-Celdas)
 
@@ -211,13 +211,13 @@ celdasPalabra(Palabra, M, [C|CS]) :-
 
 % tableroValido(+Matriz, +Inicial, +ListaDL, +ListaDP, +ListaTL, +ListaTP)
 tableroValido(M, (C,F), LDL, LDP, LTL, LTP) :-
-    dimensiones(M, CantFil, CantCol), 
+    dimensiones(M, CantFil, CantCol),
 
     C < CantCol, F < CantFil,         % Casilla inicial esta dentro del tablero
 
     flatten([LDL, LDP, LTL, LTP], L), % Casilleros premiados estan dentro del
-    premios_ok(L, CantFil, CantCol).  % tablero y no se repiten.   
-    
+    premios_ok(L, CantFil, CantCol).  % tablero y no se repiten.
+
 dimensiones([], 0, 0).
 dimensiones([X|XS], CantFil, CantCol) :-
     length(X, CantCol),
@@ -227,7 +227,7 @@ dimensiones([X|XS], CantFil, CantCol) :-
 % Afirma que no haya posiciones repetidos en la lista y que esten todos en rango.
 premios_ok([], _, _).
 premios_ok([(C,F)|XS], CantFil, CantCol) :-
-    not(member((C,F), XS)), C < CantCol, F < CantFil,  
+    not(member((C,F), XS)), C < CantCol, F < CantFil,
     premios_ok(XS, CantFil, CantCol).
 
 
@@ -247,28 +247,52 @@ cruzaAlguna(Palabra, Anteriores, M) :-
     seCruzan(Palabra, P, M).
 
 % arrancaEnCero(+Matriz, +Palabra)
-arrancaEnCero(_,[]).
-arrancaEnCero(M, [X|_]) :- buscarPalabra(M, X, C, _), member((0,0), C).
+arrancaEnCero(_, I, []).
+arrancaEnCero(M, I, [X|_]) :- buscarPalabra(M, X, [P|PS], _), I = P.
 
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
-    arrancaEnCero(M,P),
+    arrancaEnInicial(M, I, P),
     juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, []).
 
 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
-% Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna 
+% Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
 % anterior sucesivamente.
 juegoValidoConPalabras(_, [], _).
 juegoValidoConPalabras(_, [XS|[]], XS). % <<<<<< No pasa nada si XS es mas grande que el tablero y no la puedo poner?
 juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
-    cruzaAlguna(XS, PUS),
+    matrizDe(T,M),
+    cruzaAlguna(XS, PUS, M),
     juegoValidoConPalabras(T, XSS, [XS|PUS]).
-    
 
-% palabrasYaUbicadas(+Palabras, +Tablero, ?Ubicadas) :-
-%palabrasYaUbicadas(Palabras, Tablero, Ubicadas) :-
+productoCartesianoAux([], _, _,[]).
+productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
+productoCartesianoAux([L|LS], [K|KS], K2, C) :-
+    productoCartesianoAux([L|LS], KS, K2, Cola), append([(L,K)],Cola,C).
+
+productoCartesiano(A,B,Out) :- productoCartesianoAux(A,B,B,Out),!.
+
+repetirElementos(_, 0, []).
+repetirElementos(E, Veces, X) :-
+    Restado is Veces-1, repetirElementos(E, Restado, Cola), append([E], Cola, X).
+
+damePosicionesConLetras(_, [], []).
+damePosicionesConLetras(M, [P|PS], X) :-
+    letraEnPosicion(M,P,Q), ground(Q), damePosicionesConLetras(M, PS, Cola),
+    append([P],Cola, X).
+damePosicionesConLetras(M, [P|PS], X) :-
+    letraEnPosicion(M,P,Q), var(Q), damePosicionesConLetras(M, PS, X).
+
+posicionesCompletadas([],_).
+posicionesCompletadas([L|LS], Out)  :-
+    length(L,XX), length([L|LS],YY),
+    X is XX-1, Y is YY-1,
+    numlist(0,X, B), numlist(0,Y,W),
+    productoCartesiano(B, W, TodasLasPos),
+    damePosicionesConLetras([L|LS], TodasLasPos, Out ),!.
+
 
 %%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -284,7 +308,7 @@ puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
     puntosPalabra(Palabra, BonusLetras, PuntosTmp),
     Puntos is PuntosTmp * BonusPalabra.
 
-% Suma los valores de cada letra de la palabra multiplicada por los bonuses 
+% Suma los valores de cada letra de la palabra multiplicada por los bonuses
 % dados en la otra lista.
 % puntosPalabra(+Palabra, +LBonus, ?Puntos).
 puntosPalabra([], [], 0).
@@ -355,7 +379,7 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
     copiaTablero(TableroInicial, TableroCompleto),
     puntajeJuego(TableroCompleto, Palabras, Puntaje).
-    
+
 
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoOptimo(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
@@ -374,7 +398,7 @@ optimo([(Tablero,Puntaje)|XS], Tablero, Puntaje) :-
     Puntaje >= PuntajeTmp.
 optimo([(_, Puntaje1)|XS], Tablero, Puntaje) :-
     optimo(XS, Tablero, Puntaje),
-    Puntaje  > Puntaje1. 
+    Puntaje  > Puntaje1.
 
 % La conversa de una solución suele ser solución a menos que los premios
 % favorezcan a una de ellas.
