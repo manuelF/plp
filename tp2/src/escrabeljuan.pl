@@ -76,7 +76,7 @@ fichas(FS) :-
 % Define Matriz como lista de filas. Se asume que (0,0) es la posición de
 % arriba a la izquierda.
 matriz(F, _, []) :- F =< 0, !.
-matriz(F, C, [L | LS]) :- length(L, C),  matriz(F-1, C, LS). %ver var o letras?
+matriz(F, C, [L | LS]) :- length(L, C), matriz(F-1, C, LS).
 
 % Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
@@ -258,14 +258,14 @@ cruzaAlguna(Palabra, Anteriores, M) :-
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), [], P).
+    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, []).
 
 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
-juegoValidoConPalabras(_, [], _) :- !.
-juegoValidoConPalabras(_, [XS|[]], XS) :-  !.
+juegoValidoConPalabras(_, [], _).
+juegoValidoConPalabras(_, [XS|[]], XS).
 juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
-    not(cruzaAlgula(XS, PUS)),
+    cruzaAlgula(XS, PUS),
     juegoValidoConPalabras(T, XSS, [XS|PUS]).
     
 
@@ -279,7 +279,7 @@ puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
     bonusPalabra(Posiciones, LDP, LTP, BonusPalabra),
     bonusLetras(Posiciones,  LDL, LTL, BonusLetras),
     puntosPalabra(Palabra, BonusLetras, PuntosTmp),
-    Puntos = PuntosTmp * BonusPalabra.
+    Puntos is PuntosTmp * BonusPalabra.
 
 
 puntosPalabra([], [], 0).
@@ -313,8 +313,16 @@ bonusLetras([_|XS], LDL, LTL, [1|LBLS]) :-
 
 
 
-% puntajeJuego(+Tablero, +Palabras, -Puntaje)
+% puntajeJuego(+?Tablero, +Palabras, -Puntaje)
+puntajeJuego(t(M,I,LDL,LDP,LTL,LTP), Palabras, Puntaje) :-
+    tableroValido(M,I,LDL,LDP,LTL,LTP),
+    puntajeTotal(Palabras, t(M,_,LDL,LDP,LTL,LTP), Puntaje).
 
+puntajeTotal([], _, 0).
+puntajeTotal([X|XS], Tablero, Puntaje) :-
+    puntajePalabra(X, Tablero, PuntajePalabra),
+    puntajeTotal(XS, Tablero, PuntajeRestante),
+    Puntaje is PuntajePalabra + PuntajeRestante.
 
 %%%%%%%%%% Predicados para copiar estructuras (HECHOS) %%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -341,9 +349,29 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 %%%%%%%%%% Para obtener una solución óptima %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
-
+juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
+    copiaTablero(TableroInicial, TableroCompleto),
+    puntajeJuego(TableroCompleto, Palabras, Puntaje).
+    
 
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
+juegoOptimo(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
+    todosLosJuegos(TableroInicial, Palabras,  XS),
+    optimo(XS, TableroCompleto, Puntaje).
+
+
+todosLosJuegos(TableroInicial, Palabras, XS) :-
+    juegoPosible(TableroInicial, Palabras, Tablero, Puntaje),
+    member((Tablero,Puntaje), XS).
+
+% optimo(+Juegos, -Tablero, -Puntaje)
+optimo([(Tablero,Puntaje)|[]], Tablero, Puntaje).
+optimo([(Tablero,Puntaje)|XS], Tablero, Puntaje) :-
+    optimo(XS, _, PuntajeTmp),
+    Puntaje >= PuntajeTmp.
+optimo([(_, Puntaje1)|XS], Tablero, Puntaje) :-
+    optimo(XS, Tablero, Puntaje),
+    Puntaje  > Puntaje1. 
 
 % La conversa de una solución suele ser solución a menos que los premios
 % favorezcan a una de ellas.
@@ -351,65 +379,22 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 
 %%%%%%%%%% Tests %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TEST 01 - Da 1 solución de 66 puntos.
-% tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
-%% tablero1(T), juegoPosible(T,[[p,a,z],[p,e,z],[z,a,r]],CT,66), matrizDe(CT,M), buscarPalabra([p,a,z],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([z,a,r],M,C3,_).
+% TEST 01 - Da 8 soluciones de 92 puntos.
+%tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
+%tablero1(T), juegoPosible(T,[[p,a,z],[p,e,z],[z,a,r]],CT,66), matrizDe(CT,M), buscarPalabra([p,a,z],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([z,a,r],M,C3,_).
 
-% TEST 02 - Da 2 soluciones de 52 puntos:
+% TEST 02 - Da 2 soluciones de 60 puntos:
 % tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos).
 
 % TEST 03 - Da 2 soluciones de 88 puntos:
 % tablero4(T),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],Sol,Puntos), matrizDe(Sol,M), buscarPalabra([p,a,n],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([a,g,u,a],M,C3,_).
 
-% TEST 04 - Da 2 soluciones de 38 puntos:
+% TEST 04 - Da 2 soluciones de 44 puntos:
 % tablero2(T), juegoOptimo(T,[[p,a,n],[p,e,z]],CT,Puntos).
 
-% TEST 05 - Da 2 soluciones de 52 puntos, que usan *.
+% TEST 05 - Da 2 soluciones de 60 puntos, que usan *.
 % tablero2(T), juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos).
 
-% TEST 06 - Da 3 soluciones de 91 puntos.
+% TEST 06 - Da 12 soluciones de 91 puntos.
 % tablero2(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
-
-
-testJuegoOptimo1 :-
-    tablero1(T),
-    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos),XS),
-    XS=[(_,66)].
-
-testJuegoOptimo2 :-
-    tablero1(T),
-    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos),XS),
-    length(XS,2),
-    XS=[(_,52)|_].
-
-testJuegoOptimo3 :-
-    tablero4(T),
-    findall((CT,Puntos),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],CT,Puntos),XS),
-    length(XS,2),
-    XS=[(_,88)|_].
-
-testJuegoOptimo4 :-
-    tablero2(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,n],[p,e,z]],CT,Puntos),XS),
-    length(XS,2),
-    XS=[(_,38)|_].
-
-testJuegoOptimo5 :-
-    tablero2(T),
-    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos),XS),
-    length(XS,2),
-    XS=[(_,52)|_].
-
-testJuegoOptimo6 :-
-    tablero2(T),
-    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos),XS),
-    length(XS,3),
-    XS=[(_,91)|_].
-
-testJuegoOptimo :-
-    testJuegoOptimo1,
-    testJuegoOptimo2,
-    testJuegoOptimo3,
-    testJuegoOptimo4,
-    testJuegoOptimo5,
-    testJuegoOptimo6.
 
