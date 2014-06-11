@@ -237,6 +237,8 @@ dimensiones([X|XS], CantFil, CantCol) :-
     length(X, CantCol),
     length([X|XS], CantFil).
 
+% auxiliar: premios_ok(+ListaPosiciones, +Filas, +Columnas)
+% Afirma que no haya posiciones repetidos en la lista y que esten todos en rango.
 premios_ok([], _, _).
 premios_ok([(C,F)|XS], CantFil, CantCol) :-
     not(member((C,F), XS)), C < CantCol, F < CantFil,  
@@ -244,6 +246,9 @@ premios_ok([(C,F)|XS], CantFil, CantCol) :-
 
 
 % seCruzan(+Palabra1,+Palabra2,+Matriz)
+% Busca ambas palabras en la matriz que tengan distintas direcciones y que compartan
+% posiciones (como tienen direcciones distintas van a compartir a lo sumo una posicion,
+% cortar ahi no pierde soluciones).
 seCruzan(Palabra1, Palabra2, M) :-
     buscarPalabra(Palabra2, M, CS2,D2),
     buscarPalabra(Palabra1, M, CS1,D1),
@@ -262,16 +267,21 @@ juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
 
 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
+% Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna 
+% anterior sucesivamente.
 juegoValidoConPalabras(_, [], _).
-juegoValidoConPalabras(_, [XS|[]], XS).
+juegoValidoConPalabras(_, [XS|[]], XS). % <<<<<< No pasa nada si XS es mas grande que el tablero y no la puedo poner?
 juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
-    cruzaAlgula(XS, PUS),
+    cruzaAlguna(XS, PUS),
     juegoValidoConPalabras(T, XSS, [XS|PUS]).
     
 
 
 %%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Consigue las posiciones donde esta la palabra en el tablero, luego
+% consigue los bonus por letra y por la palabra en general y calcula
+% la puntuacion final.
 % puntajePalabra(+Palabra, +Tablero, -Puntos)
 puntajePalabra([], _, 0).
 puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
@@ -281,7 +291,9 @@ puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
     puntosPalabra(Palabra, BonusLetras, PuntosTmp),
     Puntos is PuntosTmp * BonusPalabra.
 
-
+% Suma los valores de cada letra de la palabra multiplicada por los bonuses 
+% dados en la otra lista.
+% puntosPalabra(+Palabra, +LBonus, ?Puntos).
 puntosPalabra([], [], 0).
 puntosPalabra([X|XS], [Y|YS], Puntos) :-
     puntaje(X, PuntosLetra),
@@ -289,7 +301,7 @@ puntosPalabra([X|XS], [Y|YS], Puntos) :-
     puntosPalabra(XS, YS, PuntosRestantes),
     Puntos is PuntosLetraConBonus + PuntosRestantes.
 
-
+% bonusPalabra(+Posiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
 bonusPalabra([], _, _, 0).
 bonusPalabra([X|XS], LDP, LTP, BP) :-
     member(X, LDP),
@@ -300,7 +312,7 @@ bonusPalabra([X|XS], LDP, LTP, BP) :-
     bonusPalabra(XS, LDP, LTP, BPTmp),
     BP is BPTmp + 3.
 
-
+% bonusLetras(+LPosiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
 bonusLetras([], _, _, []).
 bonusLetras([X|XS], LDL, LTL, [2|LBLS]) :-
     member(X, LDL),
@@ -359,7 +371,7 @@ juegoOptimo(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
     todosLosJuegos(TableroInicial, Palabras,  XS),
     optimo(XS, TableroCompleto, Puntaje).
 
-
+% todosLosJuegos(+Tablero, +Palabras, -[(Tablero, Puntaje)]
 todosLosJuegos(TableroInicial, Palabras, XS) :-
     juegoPosible(TableroInicial, Palabras, Tablero, Puntaje),
     member((Tablero,Puntaje), XS).
