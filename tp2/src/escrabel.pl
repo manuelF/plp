@@ -1,16 +1,20 @@
 %/* vim: set filetype=prolog : */  
 
-%Scrabble solitario.
-%Diferencias con respecto al juego Scrabble original: 
-%1. Se juega de a uno, buscando obtener el mayor puntaje posible.
-%2. Se juega con todas las fichas que quedan, en lugar de ir sacando de a 7.
-%3. El mismo premio puede utilizarse dos veces, si el casillero se utiliza para dos palabras.
-%4. No hace falta validar que las palabras pertenezcan a un diccionario, aunque un buen jugador utilizará palabras reales.
-%5. Dos palabras pueden tocarse, solaparse o incluso ocupar el mismo espacio - esto último si solo difieren en letras que fueron reemplazadas por *.
+% Scrabble solitario.
+% Diferencias con respecto al juego Scrabble original: 
+% 1. Se juega de a uno, buscando obtener el mayor puntaje posible.
+% 2. Se juega con todas las fichas que quedan, en lugar de ir sacando de a 7.
+% 3. El mismo premio puede utilizarse dos veces, si el casillero se utiliza
+%    para dos palabras.
+% 4. No hace falta validar que las palabras pertenezcan a un diccionario,
+%    aunque un buen jugador utilizará palabras reales.
+% 5. Dos palabras pueden tocarse, solaparse o incluso ocupar el mismo espacio
+%     - esto último si solo difieren en letras que fueron reemplazadas por *.
 
-%Dado que el juego trae las fichas ch, ll y rr, se tratará a cada una de ellas como una letra, siendo estas distintas de [c,h], [l,l] y [r,r].
+% Dado que el juego trae las fichas ch, ll y rr, se tratará a cada una de ellas
+% como una letra, siendo estas distintas de [c,h], [l,l] y [r,r].
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Definiciones propias del juego %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%% Definiciones propias del juego %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Letras y sus puntajes.
 puntaje(*,0).
@@ -43,7 +47,7 @@ fichas(FS) :- replicar(12,a,A), replicar(2,b,B), replicar(4,c,C), replicar(5,d,D
 	      replicar(1,ch,CH), replicar(1,ll,LL), replicar(1,rr,RR), replicar(2,*,Blancos),
 	      flatten([A,B,C,D,E,F,G,H,I,J,L,M,N,N1,O,P,Q,R,S,T,U,V,X,Y,Z,CH,LL,RR,Blancos],FS).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Definición de matrices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%% Definición de matrices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba a la izquierda.
 %matriz(+CantFilas, +CantColumnas, ?Matriz).
@@ -53,19 +57,25 @@ matriz(F,C, [L|LS]) :- length(L, C), matriz(F-1,C,LS).
 %Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados sobre posiciones en una matriz %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%% Predicados sobre posiciones en una matriz %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % La posición indicada está dentro del rango de la matriz del tablero
 % enRango(+Tablero, +Posicion)
-enRango([F|FS],(X,Y)) :- 0 =< X, 0 =< Y, length(F, L1), X < L1, length(FS,L2), Y =< L2.
+enRango([F | FS], (X,Y)) :-
+    0 =< X,
+    0 =< Y,
+    length(F, L1), X < L1,
+    length(FS, L2), Y =< L2.
 
-%Saber si una posici ́n est ́ definida dentro del tablero, y determinar la siguiente posición, en la dirección dada (vertical u horizontal)
+
+%Saber si una posicion esta definida dentro del tablero, y determinar la 
+%siguiente posicion, en la dirección dada (vertical u horizontal)
 % siguiente(?Direccion, +Origen, ?Destino)
 siguiente(vertical, (A,B), P) :- I is B+1, P = (A,I).
 siguiente(horizontal, (A,B), P) :- I is A+1, P = (I,B).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Proyectores del tablero %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%% Proyectores del tablero %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % matrizDe(+Tablero,?Matriz)
 matrizDe(t(M,_,_,_,_,_), M).
@@ -73,7 +83,7 @@ matrizDe(t(M,_,_,_,_,_), M).
 % inicialDe(+Tablero,?Inicial)
 inicialDe(t(_,I,_,_,_,_), I).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para contar fichas %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Predicados para contar fichas %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % fichasUtilizadas(+Matriz,-Fichas) - Es importante contar sólo las celdas que no sean variables.
 
@@ -93,8 +103,7 @@ restarListas([_|LS], L2, R) :- restarListas(LS, L2, R).
 fichasQueQuedan([], F) :- fichas(F).
 fichasQueQuedan([L|LS], F) :- soloNoVars(L, Grounded), restarListas(Grounded,Recu,F), fichasQueQuedan(LS, Recu).
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para buscar una letra (con sutiles diferencias) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Predicados para buscar una letra (con sutiles diferencias) %%%%%%%%%
 
 % letraEnPosicion(+Matriz,?Posicion,?Letra) - Letra es lo que hay en Posicion (X,Y), ya sea variable, * o una letra propiamente dicha.
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
@@ -116,7 +125,7 @@ buscarLetra(Letra, [L|LS], P ):- buscarLetraAux(Letra, [L|LS], 0, P).
 % M = [[s, i, -], [-, -, -], [-, -, -]] ; M = [[s, *, -], [-, -, -], [-, -, -]] ; M = [[*, i, -], [-, -, -], [-, -, -]] ; M = [[*, *, -], [-, -, -], [-, -, -]] ; 
 % donde los '-' representan variables, e I es siempre (0,0), ya que es la primera palabra de este tablero.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para buscar una palabra (con sutiles diferencias) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Predicados para buscar una palabra (con sutiles diferencias) %%%%%%%
 
 % Auxiliar (opcional), a definir para ubicarPalabra
 % ubicarPalabraConFichas(+Palabra,+Matriz,?Inicial,?Direccion,+FichasDisponibles) - La matriz puede estar parcialmente instanciada.
@@ -129,7 +138,7 @@ buscarLetra(Letra, [L|LS], P ):- buscarLetraAux(Letra, [L|LS], 0, P).
 celdasPalabra(Palabra, M, [C|CS]) :- ubicarPalabra(Palabra, M, C, D), buscarPalabra(Palabra, M, [C|CS], D).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para validar el tablero y los juegos %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Predicados para validar el tablero y los juegos %%%%%%%%%%%%%%%%%%%%
 
 % tableroValido(+Matriz, +Inicial, +ListaDL, +ListaDP, +ListaTL, +ListaTP)
 
@@ -144,14 +153,14 @@ cruzaAlguna(Palabra, Anteriores, M) :- member(P, Anteriores), seCruzan(Palabra, 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % puntajePalabra(+Palabra, +Tablero, -Puntos)
 
 % puntajeJuego(+Tablero, +Palabras, -Puntaje)
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Predicados para copiar estructuras (HECHOS) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Predicados para copiar estructuras (HECHOS) %%%%%%%%%%%%%%%%%%%%%%%%
 
 %Copia el contenido de las celdas que no son variables, y a las otras las llena con nuevas variables.
 % copiaMatriz(+Matriz,-Copia)
@@ -167,7 +176,7 @@ copiaFila([C|CS1],[_|CS2]) :- var(C), copiaFila(CS1,CS2).
 % copiaTablero(+Tablero,-Copia)
 copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :- copiaMatriz(M1,M2).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Para obtener una solución óptima %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Para obtener una solución óptima %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 
@@ -175,7 +184,7 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :- copia
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje) - La conversa de una solución suele ser solución a menos que los premios favorezcan a una de ellas.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Ejemplos de tableros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% Ejemplos de tableros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Tablero tradicional de Scrabble.
 tablero1(t(M, (7,7), DLS, DPS, TLS, TPS)) :- matriz(15, 15, M),
