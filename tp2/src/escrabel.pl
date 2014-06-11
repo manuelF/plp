@@ -246,9 +246,14 @@ cruzaAlguna(Palabra, Anteriores, M) :-
     member(P, Anteriores),
     seCruzan(Palabra, P, M).
 
+% arrancaEnCero(+Matriz, +Palabra)
+arrancaEnCero(_,[]).
+arrancaEnCero(M, [X|_]) :- buscarPalabra(M, X, C, _), member((0,0), C).
+
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
+    arrancaEnCero(M,P),
     juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, []).
 
 
@@ -262,6 +267,8 @@ juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
     juegoValidoConPalabras(T, XSS, [XS|PUS]).
     
 
+% palabrasYaUbicadas(+Palabras, +Tablero, ?Ubicadas) :-
+%palabrasYaUbicadas(Palabras, Tablero, Ubicadas) :-
 
 %%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
