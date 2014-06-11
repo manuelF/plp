@@ -1,5 +1,3 @@
-%/* vim: set filetype=prolog : */  
-
 % Scrabble solitario.
 % Diferencias con respecto al juego Scrabble original: 
 % 1. Se juega de a uno, buscando obtener el mayor puntaje posible.
@@ -152,8 +150,10 @@ buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = X.
 
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes) 
 
-ubicarLetra(X, M, P, LF, FR) :-
+ubicarLetra(X, M, P, LD, FR) :-
+    delete_one(X, LD, FR), !, 
     letraEnPosicion(M, P, X).
+ 
 
 
 % La matriz puede estar parcialmente instanciada.
@@ -174,82 +174,156 @@ ubicarLetra(X, M, P, LF, FR) :-
 
 %%%%%%%%%% Predicados para buscar una palabra (con sutiles diferencias) %%%%%%%
 
+
+% ubicarPalabraConFichas(+Palabra,+Matriz,?Inicial,?Direccion,+FichasDisponibles)
+
 % Auxiliar (opcional), a definir para ubicarPalabra
-% ubicarPalabraConFichas(+Palabra,+Matriz,?Inicial,?Direccion,+FichasDisponibles) - La matriz puede estar parcialmente instanciada.
+% La matriz puede estar parcialmente instanciada.
+ubicarPalabraConFichas([], _, _, _, _).
+ubicarPalabraConFichas([H|T], M, I, D, FD) :-
+    member(H, FD),
+    ubicarLetra(H, M, I, FD, FR),
+    siguiente(D, I, S),
+    ubicarPalabraConFichas(T, M, S, D, FR). 
 
-% ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion) - La matriz puede estar parcialmente instanciada.
 
-% buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion) - Sólo tiene éxito si la palabra ya estaba en la matriz.
+% ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion)
 
-% celdasPalabra(+Palabra,+Matriz,-Celdas) - Similar a buscarPalabra, pero también permite ubicar letras en espacios libres. Opcional ya definida.
-celdasPalabra(Palabra, M, [C|CS]) :- ubicarPalabra(Palabra, M, C, D), buscarPalabra(Palabra, M, [C|CS], D).
+% La matriz puede estar parcialmente instanciada.
+ubicarPalabra(P, M, I, D) :-
+    fichasQueQuedan(M, FD),
+    ubicarPalabraConFichas(P, M, I, D, FD). 
+
+
+% buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
+
+% Sólo tiene éxito si la palabra ya estaba en la matriz.
+buscarPalabra([], _, [], _).
+buscarPalabra([X|XS], M, [C|CS], D) :-
+    buscarLetra(X, M, C),
+    buscarPalabra(XS, M, CS, D),
+    direccion_ok([C|CS], D).
+
+% direccion(+Posiciones, ?Direccion)
+direccion_ok([_|[]], vertical).
+direccion_ok([_|[]], horizontal).
+direccion_ok([C1,C2|CS], D) :-
+    siguiente(D, C1, C2),
+    direccion_ok([C2|CS], D), !.
+ 
+
+% celdasPalabra(+Palabra,+Matriz,-Celdas)
+
+% Similar a buscarPalabra, pero también permite ubicar letras en espacios
+% libres. Opcional ya definida.
+celdasPalabra(Palabra, M, [C|CS]) :-
+    ubicarPalabra(Palabra, M, C, D),
+    buscarPalabra(Palabra, M, [C|CS], D).
 
 
 %%%%%%%%%%Predicados para validar el tablero y los juegos %%%%%%%%%%%%%%%%%%%%%
 
 % tableroValido(+Matriz, +Inicial, +ListaDL, +ListaDP, +ListaTL, +ListaTP)
+tableroValido(M, (C,F), LDL, LDP, LTL, LTP) :-
+    dimensiones(M, CantFil, CantCol), 
+
+    C < CantCol, F < CantFil,         % Casilla inicial esta dentro del tablero
+
+    flatten([LDL, LDP, LTL, LTP], L), % Casilleros premiados estan dentro del
+    premios_ok(L, CantFil, CantCol).  % tablero y no se repiten.   
+    
+dimensiones([], 0, 0).
+dimensiones([X|XS], CantFil, CantCol) :-
+    length(X, CantCol),
+    length([X|XS], CantFil).
+
+premios_ok([], _, _).
+premios_ok([(C,F)|XS], CantFil, CantCol) :-
+    not(member((C,F), XS)), C < CantCol, F < CantFil,  
+    premios_ok(XS, CantFil, CantCol).
+
 
 % seCruzan(+Palabra1,+Palabra2,+Matriz)
-seCruzan(Palabra1, Palabra2, M) :- buscarPalabra(Palabra2, M, CS2,_), celdasPalabra(Palabra1, M, CS1), member(C, CS1), member(C, CS2), !.
+seCruzan(Palabra1, Palabra2, M) :-
+    buscarPalabra(Palabra2, M, CS2,D2),
+    buscarPalabra(Palabra1, M, CS1,D1),
+    D1 \= D2,
+    member(C, CS1), member(C, CS2), !.
 
 % cruzaAlguna(+Palabra,+Anteriores,+Matriz)
-cruzaAlguna(Palabra, Anteriores, M) :- member(P, Anteriores), seCruzan(Palabra, P, M).
+cruzaAlguna(Palabra, Anteriores, M) :-
+    member(P, Anteriores),
+    seCruzan(Palabra, P, M).
 
-% juegoValido(+Tablero, +Palabras)
+% juegoValido(+?Tablero, +Palabras)
+juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
+    tableroValido(M,I,LDL,LDP,LTL,LTP),
+    juegoValidoConPalabras(T, [], P).
+
 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
+juegoValidoConPalabras(_, [], _), !.
+juegoValidoConPalabras(_, [XS|[]], XS), !.
+juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
+    not(cruzaAlgula(XS, PUS)),
+    juegoValidoConPalabras(T, XSS, [XS|PUS]).
+    
 
 
 %%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % puntajePalabra(+Palabra, +Tablero, -Puntos)
+puntajePalabra([], _, 0).
+%% puntajePalabra(Palabra, t(M,I,LDL,LDP,LTL,LTP), Puntos) :-
+%%     buscarPalabra(Palabra, M, Posiciones, _),
+%%     bonusPalabra(Posiciones, LDP, LTP, BonusPalabra),
+%%     puntos(Palabra, Posiciones, LDL, LTL, PuntosTmp),
+%%     Puntos is PuntosTmp * BonusPalabra.
+
+%% % puntos(Palabra, Posiciones, ListaDL, ListaDP, Puntos)
+%% puntos([X|XS],[Y|YS], LDL, LTL, Puntos) :-
+%%     puntaje(X, Tmp),
+%%     member(X, LDL), 
+%%     puntos(XS, LDL, LTL, PuntosTmp),
+%%     PuntosTmp2 is Tmp * PremiosPalabra + PuntosTmp,
+    
+
 
 % puntajeJuego(+Tablero, +Palabras, -Puntaje)
 
 
 %%%%%%%%%% Predicados para copiar estructuras (HECHOS) %%%%%%%%%%%%%%%%%%%%%%%%
 
-%Copia el contenido de las celdas que no son variables, y a las otras las llena con nuevas variables.
 % copiaMatriz(+Matriz,-Copia)
+
+% Copia el contenido de las celdas que no son variables, y a las otras las
+% llena con nuevas variables.
 copiaMatriz(Matriz,Copia) :- maplist(copiaFila, Matriz, Copia).
 
-%Copia una fila, manteniendo el contenido de las celdas ya instanciadas, y generando nuevas variables para las otras.
+
 % copiaFila(+Fila,-Copia)
+
+%Copia una fila, manteniendo el contenido de las celdas ya instanciadas, y
+%generando nuevas variables para las otras.
 copiaFila([],[]).
 copiaFila([C|CS1],[C|CS2]) :- nonvar(C), copiaFila(CS1,CS2).
 copiaFila([C|CS1],[_|CS2]) :- var(C), copiaFila(CS1,CS2).
 
 
 % copiaTablero(+Tablero,-Copia)
-copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :- copiaMatriz(M1,M2).
+copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
+    copiaMatriz(M1,M2).
 
 %%%%%%%%%% Para obtener una solución óptima %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 
 
-% juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje) - La conversa de una solución suele ser solución a menos que los premios favorezcan a una de ellas.
+% juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 
+% La conversa de una solución suele ser solución a menos que los premios
+% favorezcan a una de ellas.
 
-%%%%%%%%%% Ejemplos de tableros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%Tablero tradicional de Scrabble.
-tablero1(t(M, (7,7), DLS, DPS, TLS, TPS)) :- matriz(15, 15, M),
-					     TPS=[(0,0), (0,7), (0,14), (7,0), (7,14), (14,0), (14,7), (14,14)],
-					     DPS=[(1,1),(2,2),(3,3),(4,4),(7,7),(10,10),(11,11),(12,12),(13,13),(13,1),(12,2),(11,3),(10,4),(4,10),(3,11),(2,12),(1,13)],
-					     TLS=[(1,5),(1,9),(5,1),(5,5),(5,9),(5,13),(9,1),(9,5),(9,9),(9,13),(13,5),(13,9)],
-					     DL1=[(0,3),(0,11),(3,0),(3,14),(11,0),(11,14),(14,3),(14,11),(6,6),(8,8),(8,6),(6,8)],
-					     DL2=[(2,6),(2,8),(3,7),(6,2),(8,2),(7,3),(12,6),(12,8),(11,7),(6,12),(8,12),(7,11)],
-					     append(DL1,DL2,DLS).
-
-%Tableros pequeños para pruebas.
-tablero2(t(M,(0,0),[(1,2),(2,1)],[(0,0)],[(1,1)],[(2,2)])) :- matriz(3, 3, M).
-
-tablero3(t(M,(0,2),[(1,2),(2,1)],[(0,0)],[(1,1)],[(2,2)])) :- matriz(3, 3, M).
-
-tablero4(t(M,(2,2),[(1,1),(1,3),(3,1),(3,3)],[(0,0),(2,2),(4,4)],[(0,2),(2,0),(2,4),(4,2)],[(0,4),(4,0)])) :- matriz(5, 5, M).
-
-%Hagan algunos tableros inválidos para probar tableroValido.
 
 %%%%%%%%%% Tests %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -273,11 +347,45 @@ tablero4(t(M,(2,2),[(1,1),(1,3),(3,1),(3,3)],[(0,0),(2,2),(4,4)],[(0,2),(2,0),(2
 % tablero2(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
 
 
-testJuegoOptimo1 :- tablero1(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos),XS),XS=[(_,66)].
-testJuegoOptimo2 :- tablero1(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos),XS), length(XS,2),XS=[(_,52)|_].
-testJuegoOptimo3 :- tablero4(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],CT,Puntos),XS), length(XS,2),XS=[(_,88)|_].
-testJuegoOptimo4 :- tablero2(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,n],[p,e,z]],CT,Puntos),XS), length(XS,2),XS=[(_,38)|_].
-testJuegoOptimo5 :- tablero2(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos),XS), length(XS,2),XS=[(_,52)|_].
-testJuegoOptimo6 :- tablero2(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos),XS), length(XS,3),XS=[(_,91)|_].
-testJuegoOptimo :- testJuegoOptimo1, testJuegoOptimo2, testJuegoOptimo3, testJuegoOptimo4, testJuegoOptimo5, testJuegoOptimo6.
+testJuegoOptimo1 :-
+    tablero1(T),
+    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos),XS),
+    XS=[(_,66)].
+
+testJuegoOptimo2 :-
+    tablero1(T),
+    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos),XS),
+    length(XS,2),
+    XS=[(_,52)|_].
+
+testJuegoOptimo3 :-
+    tablero4(T),
+    findall((CT,Puntos),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],CT,Puntos),XS),
+    length(XS,2),
+    XS=[(_,88)|_].
+
+testJuegoOptimo4 :-
+    tablero2(T), findall((CT,Puntos),juegoOptimo(T,[[p,a,n],[p,e,z]],CT,Puntos),XS),
+    length(XS,2),
+    XS=[(_,38)|_].
+
+testJuegoOptimo5 :-
+    tablero2(T),
+    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos),XS),
+    length(XS,2),
+    XS=[(_,52)|_].
+
+testJuegoOptimo6 :-
+    tablero2(T),
+    findall((CT,Puntos),juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos),XS),
+    length(XS,3),
+    XS=[(_,91)|_].
+
+testJuegoOptimo :-
+    testJuegoOptimo1,
+    testJuegoOptimo2,
+    testJuegoOptimo3,
+    testJuegoOptimo4,
+    testJuegoOptimo5,
+    testJuegoOptimo6.
 
