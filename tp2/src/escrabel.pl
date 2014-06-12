@@ -248,7 +248,7 @@ cruzaAlguna(Palabra, Anteriores, M) :-
 
 % interseccionUnica(+Lista, +Lista)
 interseccionUnica(L1, L2) :-
-  intersection(L1, L2, X), length(X,1), !.
+  intersection(L1, L2, X), length(X,1),!.
 
 todasLasPosiciones([L|LS], Out) :-
     length(L,XX), length([L|LS],YY),
@@ -269,13 +269,11 @@ juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], [XS]) :-
     ubicarPalabra(XS, M, I, Dire).
 
 juegoValidoConPalabras(T, [XS|XSS], [XS|Puestas]) :-
-    matrizDe(T,M),
     juegoValidoConPalabras(T, XSS, Puestas),
-    copiaMatriz(M, M2),
-    celdasPalabra(XS, M2, CeldasAgregadas ),
+    matrizDe(T,M),
     posicionesCompletadas(M, PosicionesOriginales),
-    interseccionUnica(CeldasAgregadas, PosicionesOriginales),
-    M = M2.
+    celdasPalabra(XS, M, CeldasAgregadas ),
+    interseccionUnica(CeldasAgregadas, PosicionesOriginales).
 
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
@@ -313,7 +311,7 @@ puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
     buscarPalabra(Palabra, M, Posiciones, _),
     bonusPalabra(Posiciones, LDP, LTP, BonusPalabra),
     bonusLetras(Posiciones,  LDL, LTL, BonusLetras),
-    puntosPalabra(Palabra, BonusLetras, PuntosTmp),
+    puntosPalabra(Palabra, BonusLetras, PuntosTmp), !,
     Puntos is PuntosTmp * BonusPalabra.
 
 % Suma los valores de cada letra de la palabra multiplicada por los bonuses
@@ -352,7 +350,6 @@ bonusLetras([], _, _, []).
 
 % puntajeJuego(+?Tablero, +Palabras, -Puntaje)
 puntajeJuego(t(M,I,LDL,LDP,LTL,LTP), Palabras, Puntaje) :-
-    tableroValido(M,I,LDL,LDP,LTL,LTP),
     juegoValido(t(M,I,LDL,LDP,LTL,LTP), Palabras),
     puntajeTotal(Palabras, t(M,I,LDL,LDP,LTL,LTP), Puntaje).
 
@@ -389,19 +386,12 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
     copiaTablero(TableroInicial, TableroCompleto),
-    juegoValido(TableroCompleto, Palabras), !,
     puntajeJuego(TableroCompleto, Palabras, Puntaje).
 
-
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
-juegoOptimo(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
-    todosLosJuegos(TableroInicial, Palabras,  XS),
-    optimo(XS, TableroCompleto, Puntaje).
-
-% todosLosJuegos(+Tablero, +Palabras, -[(Tablero, Puntaje)]
-todosLosJuegos(TableroInicial, Palabras, XS) :-
-    juegoPosible(TableroInicial, Palabras, Tablero, Puntaje),
-    member((Tablero,Puntaje), XS).
+juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
+    findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS),
+    optimo(XS, MejorTableroCompleto, MejorPuntaje).
 
 % optimo(+Juegos, -Tablero, -Puntaje)
 optimo([(Tablero,Puntaje)|[]], Tablero, Puntaje).
