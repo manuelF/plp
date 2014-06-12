@@ -248,10 +248,7 @@ cruzaAlguna(Palabra, Anteriores, M) :-
 
 % interseccionUnica(+Lista, +Lista)
 interseccionUnica(L1, L2) :-
-    (
-      (member(Q,L1), member(Q, L2), member(W, L1), member(W, L2), ground(Q), ground(W))
-        -> Q=W
-    ).
+  intersection(L1, L2, X), length(X,1), !.
 
 todasLasPosiciones([L|LS], Out) :-
     length(L,XX), length([L|LS],YY),
