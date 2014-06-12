@@ -246,6 +246,13 @@ cruzaAlguna(Palabra, Anteriores, M) :-
     member(P, Anteriores),
     seCruzan(Palabra, P, M).
 
+% interseccionUnica(+Lista, +Lista)
+interseccionUnica(L1, L2) :-
+    (
+      (member(Q,L1), member(Q, L2), member(W, L1), member(W, L2), ground(Q), ground(W))
+        -> Q=W
+    ).
+
 todasLasPosiciones([L|LS], Out) :-
     length(L,XX), length([L|LS],YY),
     X is XX-1, Y is YY-1,
@@ -267,12 +274,11 @@ juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], [XS]) :-
 juegoValidoConPalabras(T, [XS|XSS], [XS|Puestas]) :-
     matrizDe(T,M),
     juegoValidoConPalabras(T, XSS, Puestas),
-    %todasLasPosiciones(M, Board),
-    posicionesCompletadas(M, Board),
-    member(Dire, [vertical,horizontal]),
-    member(Pos, Board),
-    ubicarPalabra(XS, M, Pos, Dire),
-    cruzaAlguna(XS, Puestas, M).
+    copiaMatriz(M, M2),
+    celdasPalabra(XS, M2, CeldasAgregadas ),
+    posicionesCompletadas(M, PosicionesOriginales),
+    interseccionUnica(CeldasAgregadas, PosicionesOriginales),
+    M = M2.
 
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
@@ -386,6 +392,7 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
     copiaTablero(TableroInicial, TableroCompleto),
+    juegoValido(TableroCompleto, Palabras), !,
     puntajeJuego(TableroCompleto, Palabras, Puntaje).
 
 
