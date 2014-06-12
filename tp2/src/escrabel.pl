@@ -139,7 +139,7 @@ buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
 % La matriz puede estar parcialmente instanciada.
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes)
 ubicarLetra(X, M, P, FR,FR) :-
-    letraEnPosicion(M,P,Q), ground(Q), Q=X.
+    letraEnPosicion(M,P,Q), ground(Q), Q=X, !.
 
 ubicarLetra(X, M, P, LD, FR) :-
     delete_one(X, LD, FR),!,
@@ -168,12 +168,14 @@ ubicarLetra(X, M, P, LD, FR) :-
 
 % ubicarPalabraConFichas(+Palabra,+Matriz,?Inicial,?Direccion,+FichasDisponibles)
 
+hayFichasAsi(X, FD,R) :- intersection(X,FD, R), !.
+
 % Auxiliar (opcional), a definir para ubicarPalabra
 % La matriz puede estar parcialmente instanciada.
 ubicarPalabraConFichas([], _, _, _, _).
 ubicarPalabraConFichas([H|T], M, I, D, FD) :-
-    member(L, [H, '*']), list_to_set(FD, XX),
-    member(L, XX),
+    hayFichasAsi([H, '*'],FD,LasBuscadas),!,
+    member(L, LasBuscadas), ground(L),
     ubicarLetra(L, M, I, FD, FR),
     siguiente(D, I, S),
     ubicarPalabraConFichas(T, M, S, D, FR).
@@ -253,7 +255,7 @@ cruzaAlguna(Palabra, Anteriores, M) :-
 
 % interseccionUnica(+Lista, +Lista)
 interseccionUnica(L1, L2) :-
-  intersection(L1, L2, X), length(X,1),!.
+  intersection(L1, L2, X), ground(X), length(X,R), R>0,!.
 
 todasLasPosiciones([L|LS], Out) :-
     length(L,XX), length([L|LS],YY),
@@ -263,28 +265,28 @@ todasLasPosiciones([L|LS], Out) :-
 
 % arrancaEnInicial(+Matriz, +Palabra)
 arrancaEnInicial(_, _, []).
-arrancaEnInicial(M, I, [X|_]) :- buscarPalabra(M, X, [P|_], _), I = P.
+arrancaEnInicial(M, I, X) :- member(D,[vertical,horizontal]), buscarPalabra(M, X, [P|_], D), I = P, !.
 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
 % Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
 % anterior sucesivamente.
-juegoValidoConPalabras(_, [], _).
-juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], [XS]) :-
+juegoValidoConPalabras(_, []).
+juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]]) :-
     member(Dire, [vertical,horizontal]),
     ubicarPalabra(XS, M, I, Dire).
 
-juegoValidoConPalabras(T, [XS|XSS], [XS|Puestas]) :-
-    juegoValidoConPalabras(T, XSS, Puestas),
+juegoValidoConPalabras(T, [XS|XSS]) :-
+    juegoValidoConPalabras(T, XSS),
     matrizDe(T,M),
     posicionesCompletadas(M, PosicionesOriginales),
-    celdasPalabra(XS, M, CeldasAgregadas ),
+    celdasPalabra(XS, M, CeldasAgregadas),
     interseccionUnica(CeldasAgregadas, PosicionesOriginales).
 
 % juegoValido(+?Tablero, +Palabras)
-juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
+juegoValido(t(M,I,LDL,LDP,LTL,LTP), [P|PS]) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
-    reverse(P, Px),!,
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px, Px).
+    reverse([P|PS], Px),!,
+    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px).
 
 productoCartesianoAux([], _, _,[]).
 productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
