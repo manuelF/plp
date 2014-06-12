@@ -167,7 +167,7 @@ ubicarLetra(X, M, P, LD, FR) :-
 % La matriz puede estar parcialmente instanciada.
 ubicarPalabraConFichas([], _, _, _, _).
 ubicarPalabraConFichas([H|T], M, I, D, FD) :-
-    member(H, FD),
+    member(H, FD), !,
     ubicarLetra(H, M, I, FD, FR),
     siguiente(D, I, S),
     ubicarPalabraConFichas(T, M, S, D, FR).
@@ -246,26 +246,28 @@ cruzaAlguna(Palabra, Anteriores, M) :-
     member(P, Anteriores),
     seCruzan(Palabra, P, M).
 
-% arrancaEnCero(+Matriz, +Palabra)
-arrancaEnCero(_, I, []).
-arrancaEnCero(M, I, [X|_]) :- buscarPalabra(M, X, [P|PS], _), I = P.
-
-% juegoValido(+?Tablero, +Palabras)
-juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
-    tableroValido(M,I,LDL,LDP,LTL,LTP),
-    arrancaEnInicial(M, I, P),
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, []).
-
+% arrancaEnInicial(+Matriz, +Palabra)
+arrancaEnInicial(_, _, []).
+arrancaEnInicial(M, I, [X|_]) :- buscarPalabra(M, X, [P|_], _), I = P.
 
 % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
 % Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
 % anterior sucesivamente.
 juegoValidoConPalabras(_, [], _).
-juegoValidoConPalabras(_, [XS|[]], XS). % <<<<<< No pasa nada si XS es mas grande que el tablero y no la puedo poner?
-juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
-    matrizDe(T,M),
-    cruzaAlguna(XS, PUS, M),
-    juegoValidoConPalabras(T, XSS, [XS|PUS]).
+juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], Cola) :-
+    member(Dire, [vertical,horizontal]),
+    ubicarPalabra(XS, M, I, Dire).
+% <<<<<< No pasa nada si XS es mas grande que el tablero y no la puedo poner?
+%juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
+%    matrizDe(T,M),
+%    cruzaAlguna(XS, PUS, M),
+%    juegoValidoConPalabras(T, XSS, [XS|PUS]).
+
+
+% juegoValido(+?Tablero, +Palabras)
+juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
+    tableroValido(M,I,LDL,LDP,LTL,LTP),
+    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, []).
 
 productoCartesianoAux([], _, _,[]).
 productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
@@ -273,10 +275,6 @@ productoCartesianoAux([L|LS], [K|KS], K2, C) :-
     productoCartesianoAux([L|LS], KS, K2, Cola), append([(L,K)],Cola,C).
 
 productoCartesiano(A,B,Out) :- productoCartesianoAux(A,B,B,Out),!.
-
-repetirElementos(_, 0, []).
-repetirElementos(E, Veces, X) :-
-    Restado is Veces-1, repetirElementos(E, Restado, Cola), append([E], Cola, X).
 
 damePosicionesConLetras(_, [], []).
 damePosicionesConLetras(M, [P|PS], X) :-
