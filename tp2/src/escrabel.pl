@@ -283,7 +283,8 @@ juegoValidoConPalabras(T, [XS|XSS], [XS|Puestas]) :-
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, P).
+    reverse(P, Px),!,
+    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px, Px).
 
 productoCartesianoAux([], _, _,[]).
 productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
