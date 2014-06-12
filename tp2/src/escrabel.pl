@@ -306,6 +306,19 @@ posicionesCompletadas([L|LS], Out)  :-
     damePosicionesConLetras([L|LS], TodasLasPos, Out ),!.
 
 
+%% %juegoValido(+?Tablero, +Palabras)
+%% juegoValido(t(M,I,LDL,LDP,LTL,LTP), [X|XS]) :-
+%%        tableroValido(M,I,LDL,LDP,LTL,LTP),
+%%        ubicarPalabra(X, M, I, _),
+%%        juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), XS, [X]).
+
+%% juegoValidoConPalabras(_, [], _).
+%% juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), [X|XS], YS) :-
+%%       ubicarPalabra(X, M, _, _),
+%%       cruzaAlguna(X, YS, M).
+%%       juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), XS, [X|YS]).
+
+
 %%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Consigue las posiciones donde esta la palabra en el tablero, luego
@@ -344,6 +357,7 @@ bonusPalabra([_|XS], LDP, LTP, BPTmp) :-
     bonusPalabra(XS, LDP, LTP, BPTmp).
 
 % bonusLetras(+LPosiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
+bonusLetras([], _, _, []).
 bonusLetras([X|XS], LDL, LTL, [2|LBLS]) :-
     member(X, LDL),
     bonusLetras(XS, LDL, LTL, LBLS).
@@ -352,18 +366,21 @@ bonusLetras([X|XS], LDL, LTL, [3|LBLS]) :-
     bonusLetras(XS, LDL, LTL, LBLS).
 bonusLetras([_|XS], LDL, LTL, [1|LBLS]) :-
     bonusLetras(XS, LDL, LTL, LBLS).
-bonusLetras([], _, _, []).
+
 
 % puntajeJuego(+?Tablero, +Palabras, -Puntaje)
-puntajeJuego(t(M,I,LDL,LDP,LTL,LTP), Palabras, Puntaje) :-
-    juegoValido(t(M,I,LDL,LDP,LTL,LTP), Palabras),
-    puntajeTotal(Palabras, t(M,I,LDL,LDP,LTL,LTP), Puntaje).
+puntajeJuego(Tablero, Palabras, Puntaje) :-
+    juegoValido(Tablero, Palabras),
+    puntajeTotal(Palabras, Tablero, Puntaje).
 
+% puntajeTotal(+Palabras, +Tablero, -Puntaje)
 puntajeTotal([], _, 0).
 puntajeTotal([X|XS], Tablero, Puntaje) :-
     puntajePalabra(X, Tablero, PuntajePalabra),
     puntajeTotal(XS, Tablero, PuntajeRestante),
     Puntaje is PuntajePalabra + PuntajeRestante.
+
+
 
 %%%%%%%%%% Predicados para copiar estructuras (HECHOS) %%%%%%%%%%%%%%%%%%%%%%%%
 
