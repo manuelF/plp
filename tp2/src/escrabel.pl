@@ -138,6 +138,9 @@ buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
 
 % La matriz puede estar parcialmente instanciada.
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes)
+ubicarLetra(X, M, P, FR,FR) :-
+    letraEnPosicion(M,P,Q), ground(Q), Q=X.
+
 ubicarLetra(X, M, P, LD, FR) :-
     delete_one(X, LD, FR),!,
     letraEnPosicion(M, P, X).
@@ -296,6 +299,7 @@ damePosicionesConLetras(M, [P|PS], X) :-
 damePosicionesConLetras(M, [P|PS], X) :-
     letraEnPosicion(M,P,Q), var(Q), damePosicionesConLetras(M, PS, X).
 
+
 posicionesCompletadas([],_).
 posicionesCompletadas([L|LS], Out)  :-
     todasLasPosiciones([L|LS], TodasLasPos),
@@ -327,15 +331,15 @@ puntosPalabra([X|XS], [Y|YS], Puntos) :-
     Puntos is PuntosLetraConBonus + PuntosRestantes.
 
 % bonusPalabra(+Posiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
-bonusPalabra([], _, _, 0).
+bonusPalabra([], _, _, 1).
 bonusPalabra([X|XS], LDP, LTP, BP) :-
     member(X, LDP),
     bonusPalabra(XS, LDP, LTP, BPTmp),
-    BP is BPTmp + 2.
+    BP is BPTmp * 2.
 bonusPalabra([X|XS], LDP, LTP, BP) :-
     member(X, LTP),
     bonusPalabra(XS, LDP, LTP, BPTmp),
-    BP is BPTmp + 3.
+    BP is BPTmp * 3.
 bonusPalabra([_|XS], LDP, LTP, BPTmp) :-
     bonusPalabra(XS, LDP, LTP, BPTmp).
 
@@ -387,8 +391,9 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
+    reverse(Palabras, Palabrasx),
     copiaTablero(TableroInicial, TableroCompleto),
-    puntajeJuego(TableroCompleto, Palabras, Puntaje).
+    puntajeJuego(TableroCompleto, Palabrasx, Puntaje).
 
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
