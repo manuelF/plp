@@ -333,9 +333,10 @@ bonusPalabra([X|XS], LDP, LTP, BP) :-
     member(X, LTP),
     bonusPalabra(XS, LDP, LTP, BPTmp),
     BP is BPTmp + 3.
+bonusPalabra([_|XS], LDP, LTP, BPTmp) :-
+    bonusPalabra(XS, LDP, LTP, BPTmp).
 
 % bonusLetras(+LPosiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
-bonusLetras([], _, _, []).
 bonusLetras([X|XS], LDL, LTL, [2|LBLS]) :-
     member(X, LDL),
     bonusLetras(XS, LDL, LTL, LBLS).
@@ -344,11 +345,13 @@ bonusLetras([X|XS], LDL, LTL, [3|LBLS]) :-
     bonusLetras(XS, LDL, LTL, LBLS).
 bonusLetras([_|XS], LDL, LTL, [1|LBLS]) :-
     bonusLetras(XS, LDL, LTL, LBLS).
+bonusLetras([], _, _, []).
 
 % puntajeJuego(+?Tablero, +Palabras, -Puntaje)
 puntajeJuego(t(M,I,LDL,LDP,LTL,LTP), Palabras, Puntaje) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
-    puntajeTotal(Palabras, t(M,_,LDL,LDP,LTL,LTP), Puntaje).
+    juegoValido(t(M,I,LDL,LDP,LTL,LTP), Palabras),
+    puntajeTotal(Palabras, t(M,I,LDL,LDP,LTL,LTP), Puntaje).
 
 puntajeTotal([], _, 0).
 puntajeTotal([X|XS], Tablero, Puntaje) :-

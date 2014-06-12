@@ -87,8 +87,8 @@ test(tableroValido) :-
     tablero3(t(M3,I3,LDL3,LDP3,LTL3,LTP3)), tableroValido(M3,I3,LDL3,LDP3,LTL3,LTP3),
     tablero4(t(M4,I4,LDL4,LDP4,LTL4,LTP4)), tableroValido(M4,I4,LDL4,LDP4,LTL4,LTP4).
 
-%test(juegoValido) :-
-
+test(juegoValido) :-
+    tablero2(t(M1,I1,LDL1,LDP1,LTL1,LTP1)), juegoValido(t(M1,I1,LDL1,LDP1,LTL1,LTP1), [[d,a,o],[p,e],[p,e,d]]).
 
 test(puntajePalabra) :-
     tablero5(T5), puntajePalabra([c],T5, Puntos), Puntos is 6.
@@ -97,7 +97,8 @@ test(puntajePalabra) :-
 
 %test(juegoPosible) :-
 
-%test(juegoOptimo) :-
+test(juegoOptimo) :-
+    testJuegoOptimo1.
 
 
 :- end_tests(escrabel).
