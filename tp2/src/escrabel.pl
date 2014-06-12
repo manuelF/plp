@@ -246,6 +246,12 @@ cruzaAlguna(Palabra, Anteriores, M) :-
     member(P, Anteriores),
     seCruzan(Palabra, P, M).
 
+todasLasPosiciones([L|LS], Out) :-
+    length(L,XX), length([L|LS],YY),
+    X is XX-1, Y is YY-1,
+    numlist(0,X, B), numlist(0,Y,W),
+    productoCartesiano(B, W, Out).
+
 % arrancaEnInicial(+Matriz, +Palabra)
 arrancaEnInicial(_, _, []).
 arrancaEnInicial(M, I, [X|_]) :- buscarPalabra(M, X, [P|_], _), I = P.
@@ -254,20 +260,23 @@ arrancaEnInicial(M, I, [X|_]) :- buscarPalabra(M, X, [P|_], _), I = P.
 % Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
 % anterior sucesivamente.
 juegoValidoConPalabras(_, [], _).
-juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], Cola) :-
+juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], [XS]) :-
     member(Dire, [vertical,horizontal]),
     ubicarPalabra(XS, M, I, Dire).
-% <<<<<< No pasa nada si XS es mas grande que el tablero y no la puedo poner?
-%juegoValidoConPalabras(T, [XS|XSS], [XS|PUS]) :-
-%    matrizDe(T,M),
-%    cruzaAlguna(XS, PUS, M),
-%    juegoValidoConPalabras(T, XSS, [XS|PUS]).
 
+juegoValidoConPalabras(T, [XS|XSS], [XS|Puestas]) :-
+    matrizDe(T,M),
+    juegoValidoConPalabras(T, XSS, Puestas),
+    todasLasPosiciones(M, Board),
+    member(Dire, [vertical,horizontal]),
+    member(Pos, Board),
+    ubicarPalabra(XS, M, Pos, Dire),
+    cruzaAlguna(XS, Puestas, M).
 
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), P) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, []).
+    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), P, P).
 
 productoCartesianoAux([], _, _,[]).
 productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
@@ -285,10 +294,7 @@ damePosicionesConLetras(M, [P|PS], X) :-
 
 posicionesCompletadas([],_).
 posicionesCompletadas([L|LS], Out)  :-
-    length(L,XX), length([L|LS],YY),
-    X is XX-1, Y is YY-1,
-    numlist(0,X, B), numlist(0,Y,W),
-    productoCartesiano(B, W, TodasLasPos),
+    todasLasPosiciones([L|LS], TodasLasPos),
     damePosicionesConLetras([L|LS], TodasLasPos, Out ),!.
 
 
