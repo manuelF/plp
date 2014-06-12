@@ -135,16 +135,18 @@ letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = X.
 buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
 
+
 % La matriz puede estar parcialmente instanciada.
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes)
 ubicarLetra(X, M, P, LD, FR) :-
-    delete_one(X, LD, FR), !,
+    delete_one(X, LD, FR),!,
     letraEnPosicion(M, P, X).
+
 
 % La matriz puede estar parcialmente instanciada.
 % El * puede reemplazar a cualquier letra. Puede ubicarla donde había una
 % variable.
-% Usarlo solo fichas disponibles para que no sea horriblemente ineficiente.
+% Usar solo fichas disponibles para que no sea horriblemente ineficiente.
 % Las posiciones donde ya estaba la letra son soluciones válidas y no gastan
 % una ficha.
 
@@ -167,11 +169,11 @@ ubicarLetra(X, M, P, LD, FR) :-
 % La matriz puede estar parcialmente instanciada.
 ubicarPalabraConFichas([], _, _, _, _).
 ubicarPalabraConFichas([H|T], M, I, D, FD) :-
-    member(H, FD), !,
-    ubicarLetra(H, M, I, FD, FR),
+    member(L, [H, '*']), list_to_set(FD, XX),
+    member(L, XX),
+    ubicarLetra(L, M, I, FD, FR),
     siguiente(D, I, S),
     ubicarPalabraConFichas(T, M, S, D, FR).
-
 
 % ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion)
 
