@@ -282,11 +282,16 @@ juegoValidoConPalabras(T, [XS|XSS]) :-
     celdasPalabra(XS, M, CeldasAgregadas),
     interseccionUnica(CeldasAgregadas, PosicionesOriginales).
 
+estanTodasLasPalabras(_, []).
+estanTodasLasPalabras(M, [P|PS]) :-
+    buscarPalabra(P, M, _, _), estanTodasLasPalabras(M, PS),!.
+
 % juegoValido(+?Tablero, +Palabras)
 juegoValido(t(M,I,LDL,LDP,LTL,LTP), [P|PS]) :-
     tableroValido(M,I,LDL,LDP,LTL,LTP),
     reverse([P|PS], Px),!,
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px).
+    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px),
+    estanTodasLasPalabras(M,[P|PS]).
 
 productoCartesianoAux([], _, _,[]).
 productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
