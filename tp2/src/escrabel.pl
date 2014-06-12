@@ -267,7 +267,8 @@ juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]], [XS]) :-
 juegoValidoConPalabras(T, [XS|XSS], [XS|Puestas]) :-
     matrizDe(T,M),
     juegoValidoConPalabras(T, XSS, Puestas),
-    todasLasPosiciones(M, Board),
+    %todasLasPosiciones(M, Board),
+    posicionesCompletadas(M, Board),
     member(Dire, [vertical,horizontal]),
     member(Pos, Board),
     ubicarPalabra(XS, M, Pos, Dire),
