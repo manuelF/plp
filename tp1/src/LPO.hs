@@ -131,15 +131,9 @@ instance Show Formula where
     show =  recFormula
             (\n ts         -> parentizar (mayusculirizar n) (map show ts))
             (\f r          -> "¬" ++ (if esLiteral (No f) then  r else "(" ++ r ++ ")"))
-            (\f1 f2 r1 r2  -> (if esLiteral f1 then r1 else "(" ++ r1 ++ ")") 
-                              ++ "∧" 
-                              ++ (if esLiteral f2 then r2 else "(" ++ r2 ++ ")")) 
-            (\f1 f2 r1 r2  -> (if esLiteral f1 then r1 else "(" ++ r1 ++ ")") 
-                              ++ "∨" 
-                              ++ (if esLiteral f2 then r2 else "(" ++ r2 ++ ")")) 
-            (\f1 f2 r1 r2  -> (if esLiteral f1 then r1 else "(" ++ r1 ++ ")") 
-                              ++ "⊃" 
-                              ++ (if esLiteral f2 then r2 else "(" ++ r2 ++ ")"))
+            (\f1 f2 r1 r2  -> r1 ++ "∧" ++ r2)
+            (\f1 f2 r1 r2  -> r1 ++ "∨" ++ r2)
+            (\f1 f2 r1 r2  -> r1 ++ "⊃" ++ r2)
             (\f n r        -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
             (\f n r        -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
 
@@ -229,7 +223,7 @@ interpretacionZ = I fTerminos fPredicados where
   fTerminos nombreF | nombreF == "0" = const 0
                     | nombreF == "suc" = \xs -> head xs + 1
                     | nombreF == "suma" = sum
-                    | nombreF == "invertir" = \xs -> head xs * (-1) 
+                    | nombreF == "invertir" = \xs -> head xs * (-1)
                     | nombreF == "producto" = product
   fPredicados nombreP | nombreP == "esCero" = \xs -> head xs == 0
                       | nombreP == "esPositivo" = \xs -> head xs > 0
@@ -284,7 +278,7 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- se usa para construir las funciones que luego se van a invocar.
 -- -  Se requiere el flip de los parametros para que primero aparezca la formula, lo
 -- que permite currificar el vale como (foldFormula (...) formula) interpretacion dominio asignacion.
--- Esto tiene sentido ya que la estructura que devuelve foldFormula solamente depende 
+-- Esto tiene sentido ya que la estructura que devuelve foldFormula solamente depende
 -- de la estructura de la formula parametro, y no de las evaluaciones.
 --  - La recursion explicita en este caso mezcla la estructura y la evaluacion. Es mucho
 --  mas facil de entender pero se pueden concebir casos donde sea mas eficiente construir una unica
