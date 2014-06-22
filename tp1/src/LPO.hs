@@ -130,7 +130,7 @@ parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 instance Show Formula where
     show =  recFormula
             (\n ts         -> parentizar (mayusculirizar n) (map show ts))
-            (\f r          -> "¬" ++ (if esLiteral (No f) then  r else "(" ++ r ++ ")"))
+            (\f r          -> "¬" ++ (if esLiteral f then  r else "(" ++ r ++ ")"))
             (\f1 f2 r1 r2  -> r1 ++ "∧" ++ r2)
             (\f1 f2 r1 r2  -> r1 ++ "∨" ++ r2)
             (\f1 f2 r1 r2  -> r1 ++ "⊃" ++ r2)
