@@ -14,16 +14,25 @@
 % Dado que el juego trae las fichas ch, ll y rr, se tratará a cada una de ellas
 % como una letra, siendo estas distintas de [c,h], [l,l] y [r,r].
 
+
 %%%%%%%%%% Predicados adicionales %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Hace exacatamente lo mismo que length pero con los argumentos dados vuelta
+% Util para poder usar en maplist.
+% length(?Int, ?List)
+length_(N, L) :- length(L, N).
 
 subtract_once(L, [], L).
 subtract_once(L1, [H2 | L2], L) :-
     delete_one(H2, L1, Rest),
     subtract_once(Rest, L2, L).
 
-delete_one(_, [], []).
+% Verdadero cuando Lista2 es Lista1 con la primer ocurrencia de Elem removida.
+% Si Elem no esta en Lista1 falla.
+% delete_one(+Elem, +Lista1, -Lista2)
+%delete_one(_, [], []).
 delete_one(X, [X | L], L).
-delete_one(X, [H1 | L1], [H1 | L]) :- delete_one(X, L1, L).
+delete_one(X, [H1 | L1], [H1 | L]) :- X \= H1, delete_one(X, L1, L).
 
 equals(L1, L2) :- msort(L1, L1ord), msort(L2, L2ord), L1ord = L2ord.
 
@@ -69,10 +78,14 @@ fichas(FS) :-
 
 %%%%%%%%%%% Definición de matrices %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba a la izquierda.
-%matriz(+CantFilas, +CantColumnas, ?Matriz).
-matriz(F,_, []) :- F =< 0, !.
-matriz(F,C, [L|LS]) :- length(L, C), matriz(F-1,C,LS).
+% Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba
+% a la izquierda.
+% matriz(+Filas, +Columnas, ?Matriz).
+%matriz(F,_, []) :- F =< 0, !.
+%matriz(F,C, [L|LS]) :- length(L, C), matriz(F-1,C,LS).
+
+% Se verifica que la matriz tiene F filas y que cada fila tiene C columnas.
+matriz(F, C, M) :- length(M, F), maplist(length_(C), M).
 
 %Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
@@ -88,8 +101,8 @@ enRango([F | FS], (X,Y)) :-
     length(FS, L2), Y =< L2.
 
 
-%Saber si una posicion esta definida dentro del tablero, y determinar la
-%siguiente posicion, en la dirección dada (vertical u horizontal)
+% Saber si una posicion esta definida dentro del tablero, y determinar la
+% siguiente posicion, en la dirección dada (vertical u horizontal)
 % siguiente(?Direccion, +Origen, ?Destino)
 siguiente(vertical, (A,B), P) :- I is B+1, P = (A,I).
 siguiente(horizontal, (A,B), P) :- I is A+1, P = (I,B).
@@ -115,35 +128,42 @@ fichasUtilizadas([L|Ls], F) :-
 
 % sonFichas(+L, ?L1)
 sonFichas([], []).
-sonFichas([X|Xs], [X|L1]) :- ground(X), sonFichas(Xs, L1), !.
+sonFichas([X|Xs], [X|L1]) :- ground(X), sonFichas(Xs, L1).
 sonFichas([X|Xs], L1) :- not(ground(X)), sonFichas(Xs, L1).
 
 % fichasQueQuedan(+Matriz, -Fichas)
 fichasQueQuedan(M, F) :-
     fichas(L1),
     fichasUtilizadas(M, L2),
-    subtract_once(L1, L2, F), !.
+    subtract_once(L1, L2, F).
 
 %%%%%%%%%% Predicados para buscar una letra (con sutiles diferencias) %%%%%%%%%
 
-% letraEnPosicion(+Matriz,?Posicion,?Letra) - Letra es lo que hay en Posicion
-% (X,Y), ya sea variable, * o una letra propiamente dicha.
+%  Letra es lo que hay en Posicion (X,Y), ya sea variable, * o una letra
+%  propiamente dicha.
+% letraEnPosicion(+Matriz,?Posicion,?Letra)
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
+
 
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion
 % ya está la letra o un *. No unifica con variables.
 buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = X.
-buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
+buscarLetra(X, M, P) :- X \= '*',  letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
 
 
 % La matriz puede estar parcialmente instanciada.
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes)
-ubicarLetra(X, M, P, FR,FR) :-
-    letraEnPosicion(M,P,Q), ground(Q), Q=X, !.
+%% ubicarLetra(X, M, P, FR,FR) :-
+%%     letraEnPosicion(M,P,Q), ground(Q), Q=X, !.
 
-ubicarLetra(X, M, P, LD, FR) :-
-    delete_one(X, LD, FR),!,
-    letraEnPosicion(M, P, X).
+%% ubicarLetra(X, M, P, LD, FR) :-
+%%     delete_one(X, LD, FR),!,
+%%     letraEnPosicion(M, P, X).
+
+
+ubicarLetra(X, M, P, FD, FD) :- buscarLetra(X, M, P).
+ubicarLetra(X, M, P, FD, FR) :-
+    delete_one(X, FD, FR), letraEnPosicion(M, P, X).
 
 
 % La matriz puede estar parcialmente instanciada.
@@ -168,28 +188,34 @@ ubicarLetra(X, M, P, LD, FR) :-
 
 % ubicarPalabraConFichas(+Palabra,+Matriz,?Inicial,?Direccion,+FichasDisponibles)
 
-hayFichasAsi(X, FD,R) :- intersection(X,FD, R), !.
+%% hayFichasAsi(X, FD,R) :- intersection(X,FD, R), !.
 
 % Auxiliar (opcional), a definir para ubicarPalabra
 % La matriz puede estar parcialmente instanciada.
+%% ubicarPalabraConFichas([], _, _, _, _).
+%% ubicarPalabraConFichas([H|T], M, I, D, FD) :-
+%%     hayFichasAsi([H, '*'],FD,LasBuscadas),!,
+%%     member(L, LasBuscadas), ground(L),
+%%     ubicarLetra(L, M, I, FD, FR),
+%%     siguiente(D, I, S),
+%%     ubicarPalabraConFichas(T, M, S, D, FR).
+
 ubicarPalabraConFichas([], _, _, _, _).
 ubicarPalabraConFichas([H|T], M, I, D, FD) :-
-    hayFichasAsi([H, '*'],FD,LasBuscadas),!,
-    member(L, LasBuscadas), ground(L),
-    ubicarLetra(L, M, I, FD, FR),
+    enRango(M, I),
+    ubicarLetra(H, M, I, FD, FR),
     siguiente(D, I, S),
     ubicarPalabraConFichas(T, M, S, D, FR).
 
-% ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion)
 
 % La matriz puede estar parcialmente instanciada.
+% ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion)
 ubicarPalabra(P, M, I, D) :-
     fichasQueQuedan(M, FD),
     ubicarPalabraConFichas(P, M, I, D, FD).
 
 
 % buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
-
 % Sólo tiene éxito si la palabra ya estaba en la matriz.
 buscarPalabra([], _, [], _).
 buscarPalabra([X|XS], M, [C|CS], D) :-
