@@ -202,8 +202,8 @@ ubicarLetra(X, M, P, FD, FR) :-
 
 ubicarPalabraConFichas([], _, _, _, _).
 ubicarPalabraConFichas([H|T], M, I, D, FD) :-
-    enRango(M, I),
     ubicarLetra(H, M, I, FD, FR),
+    enRango(M, I),
     siguiente(D, I, S),
     ubicarPalabraConFichas(T, M, S, D, FR).
 
@@ -258,9 +258,6 @@ tableroValido(M, (C,F), LDL, LDP, LTL, LTP) :-
 
 
 % seCruzan(+Palabra1,+Palabra2,+Matriz)
-% Busca ambas palabras en la matriz que tengan distintas direcciones y que compartan
-% posiciones (como tienen direcciones distintas van a compartir a lo sumo una posicion,
-% cortar ahi no pierde soluciones).
 seCruzan(Palabra1, Palabra2, M) :-
     buscarPalabra(Palabra2, M, CS2,D2),
     buscarPalabra(Palabra1, M, CS1,D1),
@@ -272,78 +269,78 @@ cruzaAlguna(Palabra, Anteriores, M) :-
     member(P, Anteriores),
     seCruzan(Palabra, P, M).
 
-% interseccionUnica(+Lista, +Lista)
-interseccionUnica(L1, L2) :-
-  intersection(L1, L2, X), ground(X), length(X,R), R>0,!.
+%% % interseccionUnica(+Lista, +Lista)
+%% interseccionUnica(L1, L2) :-
+%%   intersection(L1, L2, X), ground(X), length(X,R), R>0,!.
 
-todasLasPosiciones([L|LS], Out) :-
-    length(L,XX), length([L|LS],YY),
-    X is XX-1, Y is YY-1,
-    numlist(0,X, B), numlist(0,Y,W),
-    productoCartesiano(B, W, Out).
+%% todasLasPosiciones([L|LS], Out) :-
+%%     length(L,XX), length([L|LS],YY),
+%%     X is XX-1, Y is YY-1,
+%%     numlist(0,X, B), numlist(0,Y,W),
+%%     productoCartesiano(B, W, Out).
 
-% arrancaEnInicial(+Matriz, +Palabra)
-arrancaEnInicial(_, _, []).
-arrancaEnInicial(M, I, X) :- member(D,[vertical,horizontal]), buscarPalabra(M, X, [P|_], D), I = P, !.
+%% % arrancaEnInicial(+Matriz, +Palabra)
+%% arrancaEnInicial(_, _, []).
+%% arrancaEnInicial(M, I, X) :- member(D,[vertical,horizontal]), buscarPalabra(M, X, [P|_], D), I = P, !.
 
-% juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
-% Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
-% anterior sucesivamente.
-juegoValidoConPalabras(_, []).
-juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]]) :-
-    member(Dire, [vertical,horizontal]),
-    ubicarPalabra(XS, M, I, Dire).
+%% % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
+%% % Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
+%% % anterior sucesivamente.
+%% juegoValidoConPalabras(_, []).
+%% juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]]) :-
+%%     member(Dire, [vertical,horizontal]),
+%%     ubicarPalabra(XS, M, I, Dire).
 
-juegoValidoConPalabras(T, [XS|XSS]) :-
-    juegoValidoConPalabras(T, XSS),
-    matrizDe(T,M),
-    posicionesCompletadas(M, PosicionesOriginales),
-    celdasPalabra(XS, M, CeldasAgregadas),
-    interseccionUnica(CeldasAgregadas, PosicionesOriginales).
+%% juegoValidoConPalabras(T, [XS|XSS]) :-
+%%     juegoValidoConPalabras(T, XSS),
+%%     matrizDe(T,M),
+%%     posicionesCompletadas(M, PosicionesOriginales),
+%%     celdasPalabra(XS, M, CeldasAgregadas),
+%%     interseccionUnica(CeldasAgregadas, PosicionesOriginales).
 
-estanTodasLasPalabras(_, []).
-estanTodasLasPalabras(M, [P|PS]) :-
-    buscarPalabra(P, M, _, _), estanTodasLasPalabras(M, PS),!.
+%% estanTodasLasPalabras(_, []).
+%% estanTodasLasPalabras(M, [P|PS]) :-
+%%     buscarPalabra(P, M, _, _), estanTodasLasPalabras(M, PS),!.
 
-% juegoValido(+?Tablero, +Palabras)
-juegoValido(t(M,I,LDL,LDP,LTL,LTP), [P|PS]) :-
-    tableroValido(M,I,LDL,LDP,LTL,LTP),
-    reverse([P|PS], Px),!,
-    juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px),
-    estanTodasLasPalabras(M,[P|PS]).
+%% % juegoValido(+?Tablero, +Palabras)
+%% juegoValido(t(M,I,LDL,LDP,LTL,LTP), [P|PS]) :-
+%%     tableroValido(M,I,LDL,LDP,LTL,LTP),
+%%     reverse([P|PS], Px),!,
+%%     juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px),
+%%     estanTodasLasPalabras(M,[P|PS]).
 
-productoCartesianoAux([], _, _,[]).
-productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
-productoCartesianoAux([L|LS], [K|KS], K2, C) :-
-    productoCartesianoAux([L|LS], KS, K2, Cola), append([(L,K)],Cola,C).
+%% productoCartesianoAux([], _, _,[]).
+%% productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
+%% productoCartesianoAux([L|LS], [K|KS], K2, C) :-
+%%     productoCartesianoAux([L|LS], KS, K2, Cola), append([(L,K)],Cola,C).
 
-productoCartesiano(A,B,Out) :- productoCartesianoAux(A,B,B,Out),!.
+%% productoCartesiano(A,B,Out) :- productoCartesianoAux(A,B,B,Out),!.
 
-damePosicionesConLetras(_, [], []).
-damePosicionesConLetras(M, [P|PS], X) :-
-    letraEnPosicion(M,P,Q), ground(Q), damePosicionesConLetras(M, PS, Cola),
-    append([P],Cola, X).
-damePosicionesConLetras(M, [P|PS], X) :-
-    letraEnPosicion(M,P,Q), var(Q), damePosicionesConLetras(M, PS, X).
-
-
-posicionesCompletadas([],_).
-posicionesCompletadas([L|LS], Out)  :-
-    todasLasPosiciones([L|LS], TodasLasPos),
-    damePosicionesConLetras([L|LS], TodasLasPos, Out ),!.
+%% damePosicionesConLetras(_, [], []).
+%% damePosicionesConLetras(M, [P|PS], X) :-
+%%     letraEnPosicion(M,P,Q), ground(Q), damePosicionesConLetras(M, PS, Cola),
+%%     append([P],Cola, X).
+%% damePosicionesConLetras(M, [P|PS], X) :-
+%%     letraEnPosicion(M,P,Q), var(Q), damePosicionesConLetras(M, PS, X).
 
 
-%% %juegoValido(+?Tablero, +Palabras)
-%% juegoValido(t(M,I,LDL,LDP,LTL,LTP), [X|XS]) :-
-%%        tableroValido(M,I,LDL,LDP,LTL,LTP),
-%%        ubicarPalabra(X, M, I, _),
-%%        juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), XS, [X]).
+%% posicionesCompletadas([],_).
+%% posicionesCompletadas([L|LS], Out)  :-
+%%     todasLasPosiciones([L|LS], TodasLasPos),
+%%     damePosicionesConLetras([L|LS], TodasLasPos, Out ),!.
 
-%% juegoValidoConPalabras(_, [], _).
-%% juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), [X|XS], YS) :-
-%%       ubicarPalabra(X, M, _, _),
-%%       cruzaAlguna(X, YS, M).
-%%       juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), XS, [X|YS]).
+
+%juegoValido(+?Tablero, +Palabras)
+juegoValido(t(M,I,LDL,LDP,LTL,LTP), [X|XS]) :-
+       tableroValido(M, I, LDL, LDP, LTL, LTP),
+       ubicarPalabra(X, M, I, _),
+       juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), XS, [X]).
+
+juegoValidoConPalabras(_, [], _).
+juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), [X|XS], YS) :-
+      ubicarPalabra(X, M, _, _),
+      cruzaAlguna(X, YS, M),
+      juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), XS, [X|YS]).
 
 
 %%%%%%%%%% Predicados para calcular puntajes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -357,7 +354,7 @@ puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
     buscarPalabra(Palabra, M, Posiciones, _),
     bonusPalabra(Posiciones, LDP, LTP, BonusPalabra),
     bonusLetras(Posiciones,  LDL, LTL, BonusLetras),
-    puntosPalabra(Palabra, BonusLetras, PuntosTmp), !,
+    puntosPalabra(Palabra, BonusLetras, PuntosTmp),
     Puntos is PuntosTmp * BonusPalabra.
 
 % Suma los valores de cada letra de la palabra multiplicada por los bonuses
@@ -380,7 +377,9 @@ bonusPalabra([X|XS], LDP, LTP, BP) :-
     member(X, LTP),
     bonusPalabra(XS, LDP, LTP, BPTmp),
     BP is BPTmp * 3.
-bonusPalabra([_|XS], LDP, LTP, BPTmp) :-
+bonusPalabra([X|XS], LDP, LTP, BPTmp) :-
+    \+ member(X, LDP),
+    \+ member(X, LTP),
     bonusPalabra(XS, LDP, LTP, BPTmp).
 
 % bonusLetras(+LPosiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
@@ -391,7 +390,9 @@ bonusLetras([X|XS], LDL, LTL, [2|LBLS]) :-
 bonusLetras([X|XS], LDL, LTL, [3|LBLS]) :-
     member(X, LTL),
     bonusLetras(XS, LDL, LTL, LBLS).
-bonusLetras([_|XS], LDL, LTL, [1|LBLS]) :-
+bonusLetras([X|XS], LDL, LTL, [1|LBLS]) :-
+    \+ member(X, LDL),
+    \+ member(X, LTL),
     bonusLetras(XS, LDL, LTL, LBLS).
 
 
