@@ -81,13 +81,10 @@ fichas(FS) :-
 % Define Matriz como lista de filas. Se asume que (0,0) es la posición de arriba
 % a la izquierda.
 % matriz(+Filas, +Columnas, ?Matriz).
-%matriz(F,_, []) :- F =< 0, !.
-%matriz(F,C, [L|LS]) :- length(L, C), matriz(F-1,C,LS).
-
-% Se verifica que la matriz tiene F filas y que cada fila tiene C columnas.
 matriz(F, C, M) :- length(M, F), maplist(length_(C), M).
 
-%Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
+
+% Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
 
 %%%%%%%%%% Predicados sobre posiciones en una matriz %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -436,10 +433,13 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
-    reverse(Palabras, Palabrasx),
+    %reverse(Palabras, Palabrasx),
     copiaTablero(TableroInicial, TableroCompleto),
-    puntajeJuego(TableroCompleto, Palabrasx, Puntaje).
+    puntajeJuego(TableroCompleto, Palabras, Puntaje).
 
+
+% La conversa de una solución suele ser solución a menos que los premios
+% favorezcan a una de ellas.
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
     findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS),
@@ -454,27 +454,3 @@ optimo([(_, Puntaje1)|XS], Tablero, Puntaje) :-
     optimo(XS, Tablero, Puntaje),
     Puntaje  > Puntaje1.
 
-% La conversa de una solución suele ser solución a menos que los premios
-% favorezcan a una de ellas.
-
-
-%%%%%%%%%% Tests %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% TEST 01 - Da 8 soluciones de 92 puntos.
-%tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
-%tablero1(T), juegoPosible(T,[[p,a,z],[p,e,z],[z,a,r]],CT,66), matrizDe(CT,M), buscarPalabra([p,a,z],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([z,a,r],M,C3,_).
-
-% TEST 02 - Da 2 soluciones de 60 puntos:
-% tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos).
-
-% TEST 03 - Da 2 soluciones de 88 puntos:
-% tablero4(T),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],Sol,Puntos), matrizDe(Sol,M), buscarPalabra([p,a,n],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([a,g,u,a],M,C3,_).
-
-% TEST 04 - Da 2 soluciones de 44 puntos:
-% tablero2(T), juegoOptimo(T,[[p,a,n],[p,e,z]],CT,Puntos).
-
-% TEST 05 - Da 2 soluciones de 60 puntos, que usan *.
-% tablero2(T), juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos).
-
-% TEST 06 - Da 12 soluciones de 91 puntos.
-% tablero2(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
