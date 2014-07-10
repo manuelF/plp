@@ -77,8 +77,8 @@ test(fichasQueQuedan) :-
 
 test(buscarLetra) :-
     buscarLetra(a, [[X1,a], [b,X2]], (1,0)),
-    buscarLetra(a, [[X1,a], [b,X2]], P), P = (1,0),
-    buscarLetra(a, [[*,_], [_,_]], P), P = (0,0).
+    buscarLetra(a, [[X1,a], [b,X2]], P1), P1 = (1,0),
+    buscarLetra(a, [[*,_], [_,_]], P2), P2 = (0,0).
 
 test(ubicarLetra) :-
     ubicarLetra(a, [[b,b],[b,_]], Pos, [a,b,c], [b,c]), Pos == (1,1).
@@ -89,16 +89,16 @@ test(ubicarPalabra) :-
     ubicarPalabra([a,b,c], M, (0,0), horizontal),
     \+ ubicarPalabra([a,b,c,d], MCopy, (0,0), horizontal), !.
 
-%% test(buscarPalabra) :-
-%%     buscarPalabra([p,e], [[p,_],[e,_]], [(0,0),(0,1)], vertical),
-%%     buscarPalabra([p,e], [[p,e],[_,_]], [(0,0),(1,0)], horizontal).
+test(buscarPalabra) :-
+    buscarPalabra([p,e], [[p,_],[e,_]], [(0,0),(0,1)], vertical),
+    buscarPalabra([p,e], [[p,e],[_,_]], [(0,0),(1,0)], horizontal).
 
-%% test(tableroValido) :-
-%%     tablero1(t(M1,I1,LDL1,LDP1,LTL1,LTP1)), tableroValido(M1,I1,LDL1,LDP1,LTL1,LTP1),
-%%     tablero2(t(M2,I2,LDL2,LDP2,LTL2,LTP2)), tableroValido(M2,I2,LDL2,LDP2,LTL2,LTP2),
-%%     tablero3(t(M3,I3,LDL3,LDP3,LTL3,LTP3)), tableroValido(M3,I3,LDL3,LDP3,LTL3,LTP3),
-%%     tablero3(t(M3,I3,LDL3,LDP3,LTL3,LTP3)), tableroValido(M3,I3,LDL3,LDP3,LTL3,LTP3),
-%%     tablero4(t(M4,I4,LDL4,LDP4,LTL4,LTP4)), tableroValido(M4,I4,LDL4,LDP4,LTL4,LTP4).
+test(tableroValido) :-
+    tablero1(t(M1,I1,LDL1,LDP1,LTL1,LTP1)), tableroValido(M1,I1,LDL1,LDP1,LTL1,LTP1),
+    tablero2(t(M2,I2,LDL2,LDP2,LTL2,LTP2)), tableroValido(M2,I2,LDL2,LDP2,LTL2,LTP2),
+    tablero3(t(M3,I3,LDL3,LDP3,LTL3,LTP3)), tableroValido(M3,I3,LDL3,LDP3,LTL3,LTP3),
+    tablero3(t(M3,I3,LDL3,LDP3,LTL3,LTP3)), tableroValido(M3,I3,LDL3,LDP3,LTL3,LTP3),
+    tablero4(t(M4,I4,LDL4,LDP4,LTL4,LTP4)), tableroValido(M4,I4,LDL4,LDP4,LTL4,LTP4).
 
 %% test(juegoValido) :-
 %%     tablero2(t(M1,I1,LDL1,LDP1,LTL1,LTP1)), juegoValido(t(M1,I1,LDL1,LDP1,LTL1,LTP1), [[d,a,o],[p,e],[p,e,d]]),  %Juego invalido

@@ -217,19 +217,26 @@ ubicarPalabra(P, M, I, D) :-
 
 % buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
 % Sólo tiene éxito si la palabra ya estaba en la matriz.
+%% buscarPalabra([], _, [], _).
+%% buscarPalabra([X|XS], M, [C|CS], D) :-
+%%     buscarLetra(X, M, C),
+%%     buscarPalabra(XS, M, CS, D),
+%%     direccion_ok([C|CS], D).
+
+%% % direccion(+Posiciones, ?Direccion)
+%% direccion_ok([_|[]], vertical).
+%% direccion_ok([_|[]], horizontal).
+%% direccion_ok([C1,C2|CS], D) :-
+%%     siguiente(D, C1, C2),
+%%     direccion_ok([C2|CS], D), !.
+
+
 buscarPalabra([], _, [], _).
-buscarPalabra([X|XS], M, [C|CS], D) :-
-    buscarLetra(X, M, C),
-    buscarPalabra(XS, M, CS, D),
-    direccion_ok([C|CS], D).
-
-% direccion(+Posiciones, ?Direccion)
-direccion_ok([_|[]], vertical).
-direccion_ok([_|[]], horizontal).
-direccion_ok([C1,C2|CS], D) :-
-    siguiente(D, C1, C2),
-    direccion_ok([C2|CS], D), !.
-
+buscarPalabra([X|[]], M, [C|[]], _) :- buscarLetra(X, M, C).
+buscarPalabra([X1,X2|XS], M, [C1,C2|CS], D) :-
+    buscarLetra(X1, M, C1),
+    siguiente(D, C1, C2), 
+    buscarPalabra([X2|XS], M, [C2|CS], D).
 
 % celdasPalabra(+Palabra,+Matriz,-Celdas)
 
@@ -244,24 +251,10 @@ celdasPalabra(Palabra, M, [C|CS]) :-
 
 % tableroValido(+Matriz, +Inicial, +ListaDL, +ListaDP, +ListaTL, +ListaTP)
 tableroValido(M, (C,F), LDL, LDP, LTL, LTP) :-
-    dimensiones(M, CantFil, CantCol),
-
-    C < CantCol, F < CantFil,         % Casilla inicial esta dentro del tablero
-
-    flatten([LDL, LDP, LTL, LTP], L), % Casilleros premiados estan dentro del
-    premios_ok(L, CantFil, CantCol).  % tablero y no se repiten.
-
-dimensiones([], 0, 0).
-dimensiones([X|XS], CantFil, CantCol) :-
-    length(X, CantCol),
-    length([X|XS], CantFil).
-
-% auxiliar: premios_ok(+ListaPosiciones, +Filas, +Columnas)
-% Afirma que no haya posiciones repetidos en la lista y que esten todos en rango.
-premios_ok([], _, _).
-premios_ok([(C,F)|XS], CantFil, CantCol) :-
-    not(member((C,F), XS)), C < CantCol, F < CantFil,
-    premios_ok(XS, CantFil, CantCol).
+    enRango(M, (C,F)),
+    flatten([LDL, LDP, LTL, LTP], L),
+    all_different(L),
+    maplist(enRango(M), L).
 
 
 % seCruzan(+Palabra1,+Palabra2,+Matriz)
