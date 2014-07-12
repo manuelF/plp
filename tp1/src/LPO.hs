@@ -127,16 +127,18 @@ parentizar s res = if null res then s else s ++ "(" ++ (join "," res) ++ ")"
 -- Ejemplo:
 --  show form1
 --  ¬(¬P(X))
+
+
 instance Show Formula where
     show =  recFormula
             (\n ts         -> parentizar (mayusculirizar n) (map show ts))
-            (\f r          -> "¬" ++ (if esLiteral f then  r else "(" ++ r ++ ")"))
-            (\f1 f2 r1 r2  -> r1 ++ "∧" ++ r2)
-            (\f1 f2 r1 r2  -> r1 ++ "∨" ++ r2)
-            (\f1 f2 r1 r2  -> r1 ++ "⊃" ++ r2)
-            (\f n r        -> "∀" ++ (mayusculirizar n) ++ ".("  ++ r ++ ")")
-            (\f n r        -> "∃" ++ (mayusculirizar n) ++ ".(" ++  r ++ ")")
-
+            (\f r          -> "¬" ++ (parentizarSiEsNecesario f r))
+            (\f1 f2 r1 r2  -> (parentizarSiEsNecesario f1 r1) ++ "∧" ++ (parentizarSiEsNecesario f2 r2))
+            (\f1 f2 r1 r2  -> (parentizarSiEsNecesario f1 r1) ++ "∨" ++ (parentizarSiEsNecesario f2 r2))
+            (\f1 f2 r1 r2  -> (parentizarSiEsNecesario f1 r1) ++ "⊃" ++ (parentizarSiEsNecesario f2 r2))
+            (\f n r        -> "∀" ++ (mayusculirizar n) ++ "." ++ (parentizarSiEsNecesario f r))
+            (\f n r        -> "∃" ++ (mayusculirizar n) ++ "." ++ (parentizarSiEsNecesario f r))
+            where parentizarSiEsNecesario f r = if esLiteral f then  r else "(" ++ r ++ ")"
 
 --------------------
 -- Ejercicio 7
