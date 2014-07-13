@@ -22,10 +22,12 @@
 % length(?Int, ?List)
 length_(N, L) :- length(L, N).
 
+
 subtract_once(L, [], L).
 subtract_once(L1, [H2 | L2], L) :-
     delete_one(H2, L1, Rest),
     subtract_once(Rest, L2, L).
+
 
 % Verdadero cuando Lista2 es Lista1 con la primer ocurrencia de Elem removida.
 % Si Elem no esta en Lista1 falla.
@@ -34,7 +36,11 @@ subtract_once(L1, [H2 | L2], L) :-
 delete_one(X, [X | L], L).
 delete_one(X, [H1 | L1], [H1 | L]) :- X \= H1, delete_one(X, L1, L).
 
+
 equals(L1, L2) :- msort(L1, L1ord), msort(L2, L2ord), L1ord = L2ord.
+
+% Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
+all_different(L) :- list_to_set(L,L).
 
 %%%%%%%%%%%%%%%%%%%%%% Definiciones propias del juego %%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -83,9 +89,6 @@ fichas(FS) :-
 % matriz(+Filas, +Columnas, ?Matriz).
 matriz(F, C, M) :- length(M, F), maplist(length_(C), M).
 
-
-% Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
-all_different(L) :- list_to_set(L,L).
 
 %%%%%%%%%% Predicados sobre posiciones en una matriz %%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -144,24 +147,22 @@ letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion
 % ya está la letra o un *. No unifica con variables.
-buscarLetra(X, M, P) :- X \= '*', letraEnPosicion(M, P, X1), ground(X1), X1 = X.
-buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
+buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), nonvar(X1), X1 = X.
+buscarLetra(X, M, P) :- X \= '*', letraEnPosicion(M, P, X1), nonvar(X1), X1 = '*'.
 
 
-% La matriz puede estar parcialmente instanciada.
 % ubicarLetra(+Letra,+Matriz,?Posicion,+FichasDisponibles,-FichasRestantes)
-%% ubicarLetra(X, M, P, FR,FR) :-
-%%     letraEnPosicion(M,P,Q), ground(Q), Q=X, !.
-
-%% ubicarLetra(X, M, P, LD, FR) :-
-%%     delete_one(X, LD, FR),!,
-%%     letraEnPosicion(M, P, X).
-
-
-ubicarLetra(X, M, P, FD, FD) :- buscarLetra(X, M, P).
+ubicarLetra(X, M, P, FD, FD) :-
+    buscarLetra(X, M, P).
 ubicarLetra(X, M, P, FD, FR) :-
-    letraEnPosicion(M, P, X1), var(X1), X1 = X, delete_one(X, FD, FR).
-
+    letraEnPosicion(M, P, X1), var(X1),
+    X1 = X,
+    delete_one(X, FD, FR).
+ubicarLetra(_, M, P, FD, FR) :-
+    letraEnPosicion(M, P, X1), var(X1),
+    X1 = '*',
+    delete_one('*', FD, FR).
+    
 
 % La matriz puede estar parcialmente instanciada.
 % El * puede reemplazar a cualquier letra. Puede ubicarla donde había una
@@ -249,9 +250,9 @@ celdasPalabra(Palabra, M, [C|CS]) :-
 % tableroValido(+Matriz, +Inicial, +ListaDL, +ListaDP, +ListaTL, +ListaTP)
 tableroValido(M, (C,F), LDL, LDP, LTL, LTP) :-
     enRango(M, (C,F)),
-    flatten([LDL, LDP, LTL, LTP], L),
-    all_different(L),
-    maplist(enRango(M), L).
+    flatten([LDL, LDP, LTL, LTP], Premios),
+    all_different(Premios),
+    maplist(enRango(M), Premios).
 
 
 % seCruzan(+Palabra1,+Palabra2,+Matriz)
@@ -441,16 +442,19 @@ juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
 % La conversa de una solución suele ser solución a menos que los premios
 % favorezcan a una de ellas.
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
+% juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
-    findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS),
+    findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS), !,
     optimo(XS, MejorTableroCompleto, MejorPuntaje).
 
+
 % optimo(+Juegos, -Tablero, -Puntaje)
-optimo([(Tablero,Puntaje)|[]], Tablero, Puntaje).
+optimo([(Tablero, Puntaje)], Tablero, Puntaje) :- !.
+
 optimo([(Tablero,Puntaje)|XS], Tablero, Puntaje) :-
     optimo(XS, _, PuntajeTmp),
     Puntaje >= PuntajeTmp.
-optimo([(_, Puntaje1)|XS], Tablero, Puntaje) :-
-    optimo(XS, Tablero, Puntaje),
-    Puntaje  > Puntaje1.
 
+optimo([(_, Puntaje)|XS], Tablero1, Puntaje1) :-
+    optimo(XS, Tablero1, Puntaje1),
+    Puntaje1  > Puntaje.

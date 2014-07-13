@@ -84,10 +84,7 @@ test(ubicarLetra) :-
     ubicarLetra(a, [[b,b],[b,_]], Pos, [a,b,c], [b,c]), Pos == (1,1).
 
 test(ubicarPalabra) :-
-    M = [[_,_,_],[_,_,_],[_,_,_]],
-    copiaMatriz(M, MCopy),
-    ubicarPalabra([a,b,c], M, (0,0), horizontal),
-    \+ ubicarPalabra([a,b,c,d], MCopy, (0,0), horizontal).
+    tablero2(t(M2,I2,_,_,_,_)), ubicarPalabra([p,e,z], M2, I2, _).
 
 test(buscarPalabra) :-
     buscarPalabra([p,e], [[p,_],[e,_]], [(0,0),(0,1)], vertical),
@@ -101,10 +98,10 @@ test(tableroValido) :-
     tablero4(t(M4,I4,LDL4,LDP4,LTL4,LTP4)), tableroValido(M4,I4,LDL4,LDP4,LTL4,LTP4).
 
 test(juegoValido) :-
-    \+ ( tablero2(T0), juegoValido(T0, [[d,a,o],[p,e],[p,e,d]]) ),  
+    tablero2(T0), juegoValido(T0, [[d,a,o],[p,e],[p,e,d]]),  
     tablero2(T1), juegoValido(T1, [[p,e,z],[p,a,n]]),
     tablero2(T2), juegoValido(T2, [[p,a,c],[p,e,c],[a,t,e]]),
-    \+ (tablero3(T3), juegoValido(T3, [[p,a,z],[p,e,s],[s,a,r]]) ).
+    tablero3(T3), juegoValido(T3, [[p,a,z],[p,e,s],[s,a,r]]).
  
 test(puntajePalabra) :-
     tablero5(T5), puntajePalabra([c], T5, Puntos5), Puntos5 is 6,
@@ -117,8 +114,8 @@ test(puntajePalabra) :-
 test(puntajeJuego) :-
     tablero5(T5), puntajeJuego(T5, [[c]], Puntos5), Puntos5 is 6,
     tablero6(T6), puntajeJuego(T6, [[g,o]], Puntos6), Puntos6 is 8,
-    \+ ( tablero7(T7), puntajeJuego(T7,[[i,z]], Puntos7), Puntos7 is 36 ),
-    \+ ( tablero2(T2_1), puntajeJuego(T2_1, [[p,e,z],[p,a,z]], Puntos2_1), Puntos2_1 is 56 ).
+    tablero7(T7), puntajeJuego(T7,[[i,z]], Puntos7), Puntos7 is 36,
+    tablero2(T2_1), puntajeJuego(T2_1, [[p,e,z],[p,a,z]], Puntos2_1), Puntos2_1 is 56 .
 
 
 %% %test(juegoPosible) :-
@@ -172,7 +169,7 @@ testJuegoOptimo :-
 % TEST 02 - Da 2 soluciones de 60 puntos:
 % tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos).
 
-% TEST 03 - Da 2 soluciones de 88 puntos:
+% TEST 03 - Da 2 soluciones de 88 puntos
 % tablero4(T),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],Sol,Puntos), matrizDe(Sol,M), buscarPalabra([p,a,n],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([a,g,u,a],M,C3,_).
 
 % TEST 04 - Da 2 soluciones de 44 puntos:
