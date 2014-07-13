@@ -144,8 +144,8 @@ letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
 % buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion
 % ya está la letra o un *. No unifica con variables.
-buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = X.
-buscarLetra(X, M, P) :- X \= '*',  letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
+buscarLetra(X, M, P) :- X \= '*', letraEnPosicion(M, P, X1), ground(X1), X1 = X.
+buscarLetra(_, M, P) :- letraEnPosicion(M, P, X1), ground(X1), X1 = '*'.
 
 
 % La matriz puede estar parcialmente instanciada.
@@ -160,7 +160,7 @@ buscarLetra(X, M, P) :- X \= '*',  letraEnPosicion(M, P, X1), ground(X1), X1 = '
 
 ubicarLetra(X, M, P, FD, FD) :- buscarLetra(X, M, P).
 ubicarLetra(X, M, P, FD, FR) :-
-    delete_one(X, FD, FR), letraEnPosicion(M, P, X).
+    letraEnPosicion(M, P, X1), var(X1), X1 = X, delete_one(X, FD, FR).
 
 
 % La matriz puede estar parcialmente instanciada.
