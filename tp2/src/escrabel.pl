@@ -442,28 +442,25 @@ juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
 % La conversa de una solución suele ser solución a menos que los premios
 % favorezcan a una de ellas.
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
+%% juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
+%%     findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS),
+%%     optimo(XS, MejorTableroCompleto, MejorPuntaje).
+
+
+%% % optimo(+Juegos, -Tablero, -Puntaje)
+%% optimo([(Tablero, Puntaje)], Tablero, Puntaje) :- !.
+
+%% optimo([(Tablero,Puntaje)|XS], Tablero, Puntaje) :-
+%%     optimo(XS, _, PuntajeTmp),
+%%     Puntaje >= PuntajeTmp.
+
+%% optimo([(_, Puntaje)|XS], Tablero1, Puntaje1) :-
+%%     optimo(XS, Tablero1, Puntaje1),
+%%     Puntaje1  > Puntaje.
+
+
 juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
-    findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS),
-    optimo(XS, MejorTableroCompleto, MejorPuntaje).
-
-
-% optimo(+Juegos, -Tablero, -Puntaje)
-optimo([(Tablero, Puntaje)], Tablero, Puntaje) :- !.
-
-optimo([(Tablero,Puntaje)|XS], Tablero, Puntaje) :-
-    optimo(XS, _, PuntajeTmp),
-    Puntaje >= PuntajeTmp.
-
-optimo([(_, Puntaje)|XS], Tablero1, Puntaje1) :-
-    optimo(XS, Tablero1, Puntaje1),
-    Puntaje1  > Puntaje.
-
-
-%% puntajeOptimo(TableroInicial, Palabras, MejorPuntaje) :-
-%%     findall(P, juegoPosible(TableroInicial, Palabras, _, P), XS),
-%%     max(XS, MejorPuntaje).
-    
-
-%% max([X],X) :- !.
-%% max([X|Xs],X):- max(Xs,Y), X >=Y.
-%% max([X|Xs],N):- max(Xs,N), N > X.
+    findall(P, juegoPosible(TableroInicial, Palabras, _, P), XS),
+    max_list(XS, PuntajeMaximo),
+    juegoPosible(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje),
+    MejorPuntaje = PuntajeMaximo.
