@@ -32,7 +32,6 @@ subtract_once(L1, [H2 | L2], L) :-
 % Verdadero cuando Lista2 es Lista1 con la primer ocurrencia de Elem removida.
 % Si Elem no esta en Lista1 falla.
 % delete_one(+Elem, +Lista1, -Lista2)
-%delete_one(_, [], []).
 delete_one(X, [X | L], L).
 delete_one(X, [H1 | L1], [H1 | L]) :- X \= H1, delete_one(X, L1, L).
 
@@ -45,7 +44,7 @@ all_different(L) :- list_to_set(L,L).
 %%%%%%%%%%%%%%%%%%%%%% Definiciones propias del juego %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Letras y sus puntajes.
-puntaje(*,0).
+puntaje(*, 0).
 puntaje(L, 1) :- member(L, [a, e, i, o, u, s, n, l, r, t]).
 puntaje(L, 2) :- member(L, [d, g]).
 puntaje(L, 3) :- member(L, [b, c, m, p]).
@@ -215,20 +214,6 @@ ubicarPalabra(P, M, I, D) :-
 
 % buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
 % Sólo tiene éxito si la palabra ya estaba en la matriz.
-%% buscarPalabra([], _, [], _).
-%% buscarPalabra([X|XS], M, [C|CS], D) :-
-%%     buscarLetra(X, M, C),
-%%     buscarPalabra(XS, M, CS, D),
-%%     direccion_ok([C|CS], D).
-
-%% % direccion(+Posiciones, ?Direccion)
-%% direccion_ok([_|[]], vertical).
-%% direccion_ok([_|[]], horizontal).
-%% direccion_ok([C1,C2|CS], D) :-
-%%     siguiente(D, C1, C2),
-%%     direccion_ok([C2|CS], D), !.
-
-
 buscarPalabra([], _, [], _).
 buscarPalabra([X|[]], M, [C|[]], _) :- buscarLetra(X, M, C).
 buscarPalabra([X1,X2|XS], M, [C1,C2|CS], D) :-
@@ -236,8 +221,8 @@ buscarPalabra([X1,X2|XS], M, [C1,C2|CS], D) :-
     siguiente(D, C1, C2), 
     buscarPalabra([X2|XS], M, [C2|CS], D).
 
-% celdasPalabra(+Palabra,+Matriz,-Celdas)
 
+% celdasPalabra(+Palabra,+Matriz,-Celdas)
 % Similar a buscarPalabra, pero también permite ubicar letras en espacios
 % libres. Opcional ya definida.
 celdasPalabra(Palabra, M, [C|CS]) :-
@@ -261,6 +246,7 @@ seCruzan(Palabra1, Palabra2, M) :-
     buscarPalabra(Palabra1, M, CS1,D1),
     D1 \= D2,
     member(C, CS1), member(C, CS2), !.
+
 
 % cruzaAlguna(+Palabra,+Anteriores,+Matriz)
 cruzaAlguna(Palabra, Anteriores, M) :-
@@ -352,17 +338,18 @@ puntajePalabra(Palabra, t(M,_,LDL,LDP,LTL,LTP), Puntos) :-
     buscarPalabra(Palabra, M, Posiciones, _),
     bonusPalabra(Posiciones, LDP, LTP, BonusPalabra),
     bonusLetras(Posiciones,  LDL, LTL, BonusLetras),
-    puntosPalabra(Palabra, BonusLetras, PuntosTmp),
+    puntosPalabra(M, Posiciones, BonusLetras, PuntosTmp),
     Puntos is PuntosTmp * BonusPalabra.
 
 % Suma los valores de cada letra de la palabra multiplicada por los bonuses
 % dados en la otra lista.
-% puntosPalabra(+Palabra, +LBonus, ?Puntos).
-puntosPalabra([], [], 0).
-puntosPalabra([X|XS], [Y|YS], Puntos) :-
-    puntaje(X, PuntosLetra),
+% puntosPalabra(+Matriz, +Palabra, +LBonus, ?Puntos).
+puntosPalabra(_, [], [], 0).
+puntosPalabra(M, [X|XS], [Y|YS], Puntos) :-
+    letraEnPosicion(M, X, L),
+    puntaje(L, PuntosLetra),
     PuntosLetraConBonus is PuntosLetra * Y,
-    puntosPalabra(XS, YS, PuntosRestantes),
+    puntosPalabra(M, XS, YS, PuntosRestantes),
     Puntos is PuntosLetraConBonus + PuntosRestantes.
 
 % bonusPalabra(+Posiciones, +LPosicionesDobles, +LPosicionesTriples, -LBonus)
@@ -442,25 +429,10 @@ juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
 % La conversa de una solución suele ser solución a menos que los premios
 % favorezcan a una de ellas.
 % juegoOptimo(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
-%% juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
-%%     findall((TC,P), juegoPosible(TableroInicial, Palabras, TC, P), XS),
-%%     optimo(XS, MejorTableroCompleto, MejorPuntaje).
-
-
-%% % optimo(+Juegos, -Tablero, -Puntaje)
-%% optimo([(Tablero, Puntaje)], Tablero, Puntaje) :- !.
-
-%% optimo([(Tablero,Puntaje)|XS], Tablero, Puntaje) :-
-%%     optimo(XS, _, PuntajeTmp),
-%%     Puntaje >= PuntajeTmp.
-
-%% optimo([(_, Puntaje)|XS], Tablero1, Puntaje1) :-
-%%     optimo(XS, Tablero1, Puntaje1),
-%%     Puntaje1  > Puntaje.
-
-
 juegoOptimo(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje) :-
     findall(P, juegoPosible(TableroInicial, Palabras, _, P), XS),
     max_list(XS, PuntajeMaximo),
     juegoPosible(TableroInicial, Palabras, MejorTableroCompleto, MejorPuntaje),
     MejorPuntaje = PuntajeMaximo.
+
+
