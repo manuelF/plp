@@ -118,10 +118,7 @@ test(puntajeJuego) :-
     tablero2(T2_1), puntajeJuego(T2_1, [[p,e,z],[p,a,z]], Puntos2_1), Puntos2_1 is 56 .
 
 
-%% %test(juegoPosible) :-
-
-:- end_tests(escrabel).
-
+%test(juegoPosible) :-
 
 testJuegoOptimo1 :-
     tablero1(T),
@@ -161,15 +158,17 @@ testJuegoOptimo :-
     testJuegoOptimo5,
     testJuegoOptimo6.
 
+:- end_tests(escrabel).
+
 
 % TEST 01 - Da 8 soluciones de 92 puntos.
-%tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
-%tablero1(T), juegoPosible(T,[[p,a,z],[p,e,z],[z,a,r]],CT,66), matrizDe(CT,M), buscarPalabra([p,a,z],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([z,a,r],M,C3,_).
+% tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z],[z,a,r]],CT,Puntos).
+%% tablero1(T), juegoPosible(T,[[p,a,z],[p,e,z],[z,a,r]],CT,66), matrizDe(CT,M), buscarPalabra([p,a,z],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([z,a,r],M,C3,_).
 
 % TEST 02 - Da 2 soluciones de 60 puntos:
 % tablero1(T), juegoOptimo(T,[[p,a,z],[p,e,z]],CT,Puntos).
 
-% TEST 03 - Da 2 soluciones de 88 puntos
+% TEST 03 - Da 2 soluciones de 88 puntos:
 % tablero4(T),juegoOptimo(T,[[p,a,n],[p,e,z],[a,g,u,a]],Sol,Puntos), matrizDe(Sol,M), buscarPalabra([p,a,n],M,C1,_), buscarPalabra([p,e,z],M,C2,_),buscarPalabra([a,g,u,a],M,C3,_).
 
 % TEST 04 - Da 2 soluciones de 44 puntos:

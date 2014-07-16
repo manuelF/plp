@@ -23,20 +23,17 @@
 length_(N, L) :- length(L, N).
 
 
+% Verdadero cuando  Lista es igual a Lista1 menos Lista2.
+% subtract_once(+Lista1, +Lista2, Lista)
 subtract_once(L, [], L).
 subtract_once(L1, [H2 | L2], L) :-
-    delete_one(H2, L1, Rest),
+    %delete_one(H2, L1, Rest),
+    selectchk(H2, L1, Rest),
     subtract_once(Rest, L2, L).
 
 
-% Verdadero cuando Lista2 es Lista1 con la primer ocurrencia de Elem removida.
-% Si Elem no esta en Lista1 falla.
-% delete_one(+Elem, +Lista1, -Lista2)
-delete_one(X, [X | L], L).
-delete_one(X, [H1 | L1], [H1 | L]) :- X \= H1, delete_one(X, L1, L).
-
-
 equals(L1, L2) :- msort(L1, L1ord), msort(L2, L2ord), L1ord = L2ord.
+
 
 % Pueden usar esto, o comentarlo si viene incluido en su versión de SWI-Prolog.
 all_different(L) :- list_to_set(L,L).
@@ -127,8 +124,8 @@ fichasUtilizadas([L|Ls], F) :-
 
 % sonFichas(+L, ?L1)
 sonFichas([], []).
-sonFichas([X|Xs], [X|L1]) :- ground(X), sonFichas(Xs, L1).
-sonFichas([X|Xs], L1) :- not(ground(X)), sonFichas(Xs, L1).
+sonFichas([X|Xs], [X|L1]) :- nonvar(X), sonFichas(Xs, L1).
+sonFichas([X|Xs], L1) :- var(X), sonFichas(Xs, L1).
 
 % fichasQueQuedan(+Matriz, -Fichas)
 fichasQueQuedan(M, F) :-
@@ -144,8 +141,9 @@ fichasQueQuedan(M, F) :-
 letraEnPosicion(M,(X,Y),L) :- nth0(Y,M,F), nth0(X,F,L).
 
 
-% buscarLetra(+Letra,+Matriz,?Posicion) - Sólo tiene éxito si en Posicion
-% ya está la letra o un *. No unifica con variables.
+% Sólo tiene éxito si en Posicion ya está la letra o un *. No unifica con
+% variables.
+% buscarLetra(+Letra,+Matriz,?Posicion)
 buscarLetra(X, M, P) :- letraEnPosicion(M, P, X1), nonvar(X1), X1 = X.
 buscarLetra(X, M, P) :- X \= '*', letraEnPosicion(M, P, X1), nonvar(X1), X1 = '*'.
 
@@ -156,47 +154,16 @@ ubicarLetra(X, M, P, FD, FD) :-
 ubicarLetra(X, M, P, FD, FR) :-
     letraEnPosicion(M, P, X1), var(X1),
     X1 = X,
-    delete_one(X, FD, FR).
+    selectchk(X, FD, FR).
 ubicarLetra(_, M, P, FD, FR) :-
     letraEnPosicion(M, P, X1), var(X1),
     X1 = '*',
-    delete_one('*', FD, FR).
-    
-
-% La matriz puede estar parcialmente instanciada.
-% El * puede reemplazar a cualquier letra. Puede ubicarla donde había una
-% variable.
-% Usar solo fichas disponibles para que no sea horriblemente ineficiente.
-% Las posiciones donde ya estaba la letra son soluciones válidas y no gastan
-% una ficha.
-
-% Ejemplo: tablero2(T), matrizDe(T,M), ubicarPalabra([s,i], M, I, horizontal)
-% -> se puede ubicar 'si' horizontalmente de 4 formas distintas
-% M = [[s, i, -], [-, -, -], [-, -, -]] ;
-% M = [[s, *, -], [-, -, -], [-, -, -]] ;
-% M = [[*, i, -], [-, -, -], [-, -, -]] ;
-% M = [[*, *, -], [-, -, -], [-, -, -]] ;
-% donde los '-' representan variables, e I es siempre (0,0), ya que es la
-% primera palabra de este tablero.
-
+    selectchk('*', FD, FR).
 
 %%%%%%%%%% Predicados para buscar una palabra (con sutiles diferencias) %%%%%%%
 
 
 % ubicarPalabraConFichas(+Palabra,+Matriz,?Inicial,?Direccion,+FichasDisponibles)
-
-%% hayFichasAsi(X, FD,R) :- intersection(X,FD, R), !.
-
-% Auxiliar (opcional), a definir para ubicarPalabra
-% La matriz puede estar parcialmente instanciada.
-%% ubicarPalabraConFichas([], _, _, _, _).
-%% ubicarPalabraConFichas([H|T], M, I, D, FD) :-
-%%     hayFichasAsi([H, '*'],FD,LasBuscadas),!,
-%%     member(L, LasBuscadas), ground(L),
-%%     ubicarLetra(L, M, I, FD, FR),
-%%     siguiente(D, I, S),
-%%     ubicarPalabraConFichas(T, M, S, D, FR).
-
 ubicarPalabraConFichas([], _, _, _, _).
 ubicarPalabraConFichas([H|T], M, I, D, FD) :-
     ubicarLetra(H, M, I, FD, FR),
@@ -205,15 +172,14 @@ ubicarPalabraConFichas([H|T], M, I, D, FD) :-
     ubicarPalabraConFichas(T, M, S, D, FR).
 
 
-% La matriz puede estar parcialmente instanciada.
 % ubicarPalabra(+Palabra,+Matriz,?Inicial,?Direccion)
 ubicarPalabra(P, M, I, D) :-
     fichasQueQuedan(M, FD),
     ubicarPalabraConFichas(P, M, I, D, FD).
 
 
-% buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
 % Sólo tiene éxito si la palabra ya estaba en la matriz.
+% buscarPalabra(+Palabra,+Matriz,?Celdas, ?Direccion)
 buscarPalabra([], _, [], _).
 buscarPalabra([X|[]], M, [C|[]], _) :- buscarLetra(X, M, C).
 buscarPalabra([X1,X2|XS], M, [C1,C2|CS], D) :-
@@ -222,9 +188,9 @@ buscarPalabra([X1,X2|XS], M, [C1,C2|CS], D) :-
     buscarPalabra([X2|XS], M, [C2|CS], D).
 
 
-% celdasPalabra(+Palabra,+Matriz,-Celdas)
 % Similar a buscarPalabra, pero también permite ubicar letras en espacios
 % libres. Opcional ya definida.
+% celdasPalabra(+Palabra,+Matriz,-Celdas)
 celdasPalabra(Palabra, M, [C|CS]) :-
     ubicarPalabra(Palabra, M, C, D),
     buscarPalabra(Palabra, M, [C|CS], D).
@@ -252,66 +218,6 @@ seCruzan(Palabra1, Palabra2, M) :-
 cruzaAlguna(Palabra, Anteriores, M) :-
     member(P, Anteriores),
     seCruzan(Palabra, P, M).
-
-%% % interseccionUnica(+Lista, +Lista)
-%% interseccionUnica(L1, L2) :-
-%%   intersection(L1, L2, X), ground(X), length(X,R), R>0,!.
-
-%% todasLasPosiciones([L|LS], Out) :-
-%%     length(L,XX), length([L|LS],YY),
-%%     X is XX-1, Y is YY-1,
-%%     numlist(0,X, B), numlist(0,Y,W),
-%%     productoCartesiano(B, W, Out).
-
-%% % arrancaEnInicial(+Matriz, +Palabra)
-%% arrancaEnInicial(_, _, []).
-%% arrancaEnInicial(M, I, X) :- member(D,[vertical,horizontal]), buscarPalabra(M, X, [P|_], D), I = P, !.
-
-%% % juegoValidoConPalabras(+Tablero, +PalabrasAUsar, +PalabrasUsadas)
-%% % Veo que para cada una de las palabras de lista las puedo poner cruzadas con alguna
-%% % anterior sucesivamente.
-%% juegoValidoConPalabras(_, []).
-%% juegoValidoConPalabras(t(M,I,_,_,_,_), [XS|[]]) :-
-%%     member(Dire, [vertical,horizontal]),
-%%     ubicarPalabra(XS, M, I, Dire).
-
-%% juegoValidoConPalabras(T, [XS|XSS]) :-
-%%     juegoValidoConPalabras(T, XSS),
-%%     matrizDe(T,M),
-%%     posicionesCompletadas(M, PosicionesOriginales),
-%%     celdasPalabra(XS, M, CeldasAgregadas),
-%%     interseccionUnica(CeldasAgregadas, PosicionesOriginales).
-
-%% estanTodasLasPalabras(_, []).
-%% estanTodasLasPalabras(M, [P|PS]) :-
-%%     buscarPalabra(P, M, _, _), estanTodasLasPalabras(M, PS),!.
-
-%% % juegoValido(+?Tablero, +Palabras)
-%% juegoValido(t(M,I,LDL,LDP,LTL,LTP), [P|PS]) :-
-%%     tableroValido(M,I,LDL,LDP,LTL,LTP),
-%%     reverse([P|PS], Px),!,
-%%     juegoValidoConPalabras(t(M,I,LDL,LDP,LTL,LTP), Px),
-%%     estanTodasLasPalabras(M,[P|PS]).
-
-%% productoCartesianoAux([], _, _,[]).
-%% productoCartesianoAux([_|LS], [], K2, C) :- productoCartesianoAux(LS, K2, K2, C).
-%% productoCartesianoAux([L|LS], [K|KS], K2, C) :-
-%%     productoCartesianoAux([L|LS], KS, K2, Cola), append([(L,K)],Cola,C).
-
-%% productoCartesiano(A,B,Out) :- productoCartesianoAux(A,B,B,Out),!.
-
-%% damePosicionesConLetras(_, [], []).
-%% damePosicionesConLetras(M, [P|PS], X) :-
-%%     letraEnPosicion(M,P,Q), ground(Q), damePosicionesConLetras(M, PS, Cola),
-%%     append([P],Cola, X).
-%% damePosicionesConLetras(M, [P|PS], X) :-
-%%     letraEnPosicion(M,P,Q), var(Q), damePosicionesConLetras(M, PS, X).
-
-
-%% posicionesCompletadas([],_).
-%% posicionesCompletadas([L|LS], Out)  :-
-%%     todasLasPosiciones([L|LS], TodasLasPos),
-%%     damePosicionesConLetras([L|LS], TodasLasPos, Out ),!.
 
 
 %juegoValido(+?Tablero, +Palabras)
@@ -397,17 +303,16 @@ puntajeTotal([X|XS], Tablero, Puntaje) :-
 
 %%%%%%%%%% Predicados para copiar estructuras (HECHOS) %%%%%%%%%%%%%%%%%%%%%%%%
 
-% copiaMatriz(+Matriz,-Copia)
 
 % Copia el contenido de las celdas que no son variables, y a las otras las
 % llena con nuevas variables.
+% copiaMatriz(+Matriz,-Copia)
 copiaMatriz(Matriz,Copia) :- maplist(copiaFila, Matriz, Copia).
 
 
-% copiaFila(+Fila,-Copia)
-
 %Copia una fila, manteniendo el contenido de las celdas ya instanciadas, y
 %generando nuevas variables para las otras.
+% copiaFila(+Fila,-Copia)
 copiaFila([],[]).
 copiaFila([C|CS1],[C|CS2]) :- nonvar(C), copiaFila(CS1,CS2).
 copiaFila([C|CS1],[_|CS2]) :- var(C), copiaFila(CS1,CS2).
@@ -421,7 +326,6 @@ copiaTablero(t(M1, I, DLS, DPS, TLS, TPS),t(M2, I, DLS, DPS, TLS, TPS)) :-
 
 % juegoPosible(+TableroInicial,+Palabras,-TableroCompleto,-Puntaje)
 juegoPosible(TableroInicial, Palabras, TableroCompleto, Puntaje) :-
-    %reverse(Palabras, Palabrasx),
     copiaTablero(TableroInicial, TableroCompleto),
     puntajeJuego(TableroCompleto, Palabras, Puntaje).
 
