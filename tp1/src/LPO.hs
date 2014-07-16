@@ -284,7 +284,7 @@ actualizarAsignacion nombre valor asig = \n -> if n == nombre
 -- de la estructura de la formula parametro, y no de las evaluaciones.
 --  - La recursion explicita en este caso mezcla la estructura y la evaluacion. Es mucho
 --  mas facil de entender pero se pueden concebir casos donde sea mas eficiente construir una unica
---  vez la estrucutra de evaluacion de la formula y probar varias asignaciones (util por ejemplo
+--  vez la estructura de evaluacion de la formula y probar varias asignaciones (util por ejemplo
 --  para casos de SAT solving tal vez) en vez de tener que desarmarla una y otra vez para evaluarla.
 
 -- vale interpretacionNat [0,1] (\x -> if x == "X" then 0 else 1) (Pred "mayor" [Var "Y", Var "X"])
